@@ -1,0 +1,15 @@
+/genomad_db/
+/Airways/
+.snakemake/
+core.*
+/data/
+/sratoolkit*
+/__pycache__/
+/A/
+/benchmark/
+/Skin/
+/Gastrointestinal/
+/Oral/
+/output/
+/Urogenital/
+snakejob*

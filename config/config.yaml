@@ -1,0 +1,38 @@
+
+enomad: 
+  walltime: 
+  threads: 
+  mem_mb:
+minimap2: 
+  walltime: "10:00:00:00" # TODO what??
+  threads: "15"
+  mem_gb: "15"
+spades: 
+  walltime:
+  threads:
+  mem_mb:
+
+# Paths to the benchmarks
+benchmark: "data/sample_{key}/benchmark/{id}_"
+log.e: "data/sample_{key}/log/{id}/e_"
+log.o: "data/sample_{key}/log/{id}/o_"
+benchmark.key: "data/sample_{key}/benchmark/"
+log.e.key: "data/sample_{key}/log/"
+log.o.key: "data/sample_{key}/log/"
+
+
+
+# Old
+# Datafiles cuhange
+contigs: 
+sample_data: 
+config_path: 
+sample: 
+times_run_vamb: 
+# Directories
+outdir:
+vambsrc: /home/people/lasdan/lasdan/vamb_versions/vamb/src/
+# Module envs
+moduleenvs:
+  minimap2: minimap2/2.6
+  samtools: samtools/1.17
