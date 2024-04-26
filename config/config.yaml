@@ -1,16 +1,16 @@
 
-enomad: 
-  walltime: 
-  threads: 
-  mem_mb:
-minimap2: 
+genomad: 
+  walltime:  0 
+  threads:  40 # 40 is default in genomad
+  mem_gb: 0 
+minimap: 
   walltime: "10:00:00:00" # TODO what??
-  threads: "15"
-  mem_gb: "15"
+  threads: 15 # 3 is default
+  mem_gb: 15
 spades: 
-  walltime:
-  threads:
-  mem_mb:
+  walltime: 0
+  threads: 16 # 16 is default in metaSpades
+  mem_gb: 0
 
 # Paths to the benchmarks
 benchmark: "data/sample_{key}/benchmark/{id}_"
