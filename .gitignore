@@ -1,5 +1,7 @@
 /genomad_db/
+/vamb_asymmetric
 /Airways/
+/outdir_plamb/
 .snakemake/
 core.*
 /data/

@@ -20,6 +20,7 @@ benchmark.key: "data/sample_{key}/benchmark/"
 log.e.key: "data/sample_{key}/log/"
 log.o.key: "data/sample_{key}/log/"
 
+fastq_end: ".fastq.gz"
 
 # Options from pau pipeline
 contigs_filtered_file: "/home/projects/ku_00197/people/lasdan/contig_cutoff/vamb_ptracker_done/Gastrointestinal/para_2000/contigs.flt.fna.gz"

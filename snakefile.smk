@@ -14,6 +14,8 @@ LOG_CMD = " > {log.o} 2> {log.e};"
 df = pd.read_csv("./config/accessions.txt", sep="\s+", comment="#")
 sample_id = {}
 for sample,id in zip(df.SAMPLE, df.ID):
+    id = str(id)
+    sample = str(sample)
     if sample not in sample_id:
         sample_id[sample] = [id]
     else:
@@ -102,8 +104,8 @@ rule spades:
     input:
         #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
         #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
-        fw = "data/reads/{id}_1.fastq", # Quick fix for now.. improve it later .. actually not worth it.. i guess
-        rv = "data/reads/{id}_2.fastq",
+        fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+        rv = "data/reads/{id}_2" + config["fastq_end"],
     output:
         outdir = directory("data/sample_{key}/spades_{id}"),
         outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
@@ -122,7 +124,7 @@ rule spades:
         # real case 
         #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
         "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
-        "-t {threads} " # No reason to set mem, as spades just quits if it uses above the threshold
+        "-t {threads} " 
         +LOG_CMD
 
 rulename="cat_contigs"
@@ -137,11 +139,24 @@ rule cat_contigs:
     benchmark: config["benchmark.key"]+rulename
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell: 
-        # to generate the benahcmark
-        "cat {input} > {output}"
+        # to generate the benahcmark TODO fix
+        #"cat {input} | > {output}"
         # real case 
-        #"python bin/vamb/src/concatenate.py {output} {input} -m 2000" 
+        """
+        module unload gcc/13.2.0
+        module unload gcc/12.2.0
+        module load gcc/13.2.0;"""
+        "python bin/vamb/src/concatenate.py {output} {input} "  # TODO should filter depending on size????
         +LOG_CMD
+
+rule get_contig_names:
+    input:
+        "data/sample_{key}/contigs.flt.fna.gz"
+    output: 
+        "data/sample_{key}/contigs.names.sorted"
+    shell:
+        "zcat {input} | grep '>' | sed 's/>//' | sort  > {output} "
+
 
 # Index resulting contig-file with minimap2
 rulename="index"
@@ -189,8 +204,8 @@ rule minimap:
     input:
         #fw = "data/sample_{key}/fastq/{id}_1.fastq", |
         #rv = "data/sample_{key}/fastq/{id}_2.fastq", | - For when downloading fastq files
-        fw = "data/reads/{id}_1.fastq", # Quick fix for now.. improve it later .. actually not worth it.. i guess
-        rv = "data/reads/{id}_2.fastq",
+        fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+        rv = "data/reads/{id}_2" + config["fastq_end"],
 
         mmi ="data/sample_{key}/contigs.flt.mmi",
         dict = "data/sample_{key}/contigs.flt.dict"
@@ -265,8 +280,7 @@ import re
 import os
 import sys
 import numpy as np
-SNAKEDIR = os.path.dirname(workflow.snakefile) # TODO should be bin
-sys.path.append(os.path.join(SNAKEDIR, 'bin'))
+SNAKEDIR = "bin/ptracker/src/workflow"  # os.path.dirname(workflow.snakefile) # TODO should be renmamed to something more fitting
 
 
 ## This snakemake workflow executes the second part of the  p-tracker pipeline.
@@ -329,12 +343,12 @@ rule align_contigs:
     log:
         o = os.path.join(OUTDIR,"{key}",'qsub/blastn/align_contigs.o'),
         e = os.path.join(OUTDIR,"{key}",'qsub/blastn/align_contigs.e')
-    conda:
+    #conda:
         #'envs/blast.yaml'
-        'vamb_n2v_master'
+        #'vamb_n2v_master'
     shell:
         """
-        module load ncbi-blast/2.15.0+
+        #module load ncbi-blast/2.15.0+
         gunzip -c {input} |makeblastdb -in - -dbtype nucl -out {params.db_name} -title contigs.db
         gunzip -c {input} |blastn -query - -db {params.db_name} -out {output[0]} -outfmt 6 -perc_identity 95 -num_threads {threads} -max_hsps 1000000
         touch {output[1]}
@@ -354,7 +368,7 @@ rule weighted_assembly_graphs:
         os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'),
         os.path.join(OUTDIR,"{key}", 'log','assembly_graph_processing','weighted_assembly_graphs_{id}.finished')
     params:
-        path = os.path.join(SNAKEDIR, 'bin', 'process_gfa.py'),
+        path = os.path.join(SNAKEDIR, 'src', 'process_gfa.py'),
         walltime='86400',
         nodes='1',
         ppn='4'
@@ -365,8 +379,8 @@ rule weighted_assembly_graphs:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_{id}.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_{id}.err'),
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
         #'envs/vamb.yaml'
     shell:
         """
@@ -402,8 +416,8 @@ rule weighted_assembly_graphs_all_samples:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_all_samples.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_all_samples.err')
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
         #'envs/vamb.yaml'
     shell:
         """
@@ -422,7 +436,7 @@ rule weighted_alignment_graph:
         os.path.join(OUTDIR,"{key}",'tmp','alignment_graph','alignment_graph.pkl'),
         os.path.join(OUTDIR,"{key}",'log','alignment_graph_processing','weighted_alignment_graph.finished')
     params:
-        path = os.path.join(SNAKEDIR, 'bin', 'process_blastout.py'),
+        path = os.path.join(SNAKEDIR, 'src', 'process_blastout.py'),
         walltime='86400',
         nodes='1',
         ppn='4'
@@ -433,8 +447,8 @@ rule weighted_alignment_graph:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','alignment_graph_processing','weighted_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','alignment_graph_processing','weighted_alignment_graph.err'),
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
         #'envs/vamb.yaml'
     shell:
         """
@@ -466,8 +480,8 @@ rule create_assembly_alignment_graph:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','create_assembly_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}", 'qsub','create_assembly_alignment_graph.err')
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
         #'envs/vamb.yaml'
     shell:
         """
@@ -482,7 +496,8 @@ rule create_assembly_alignment_graph:
 rule n2v_assembly_alignment_graph:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','assembly_alignment_graph.pkl'),
-        os.path.join(OUTDIR,"{key}",'log','create_assembly_alignment_graph.finished')
+        os.path.join(OUTDIR,"{key}",'log','create_assembly_alignment_graph.finished'), 
+        contig_names_file = "data/sample_{key}/contigs.names.sorted"
     output:
         directory(os.path.join(OUTDIR,"{key}",'tmp','n2v','assembly_alignment_graph_embeddings')),
         os.path.join(OUTDIR,"{key}",'tmp','n2v','assembly_alignment_graph_embeddings','embeddings.npz'),
@@ -500,13 +515,13 @@ rule n2v_assembly_alignment_graph:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','n2v','n2v_assembly_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','n2v','n2v_assembly_alignment_graph.err')
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
         #'envs/vamb.yaml'
     shell:
         """
         python {params.path} -G {input[0]} --ed {N2V_ED} --nw {N2V_NW} --ws {N2V_WS} --wl {N2V_WL}\
-         -p {N2V_P} -q {N2V_Q} --outdirembs {output[0]} --normE {N2V_NZ} --contignames {CONTIGNAMES_FILE}
+         -p {N2V_P} -q {N2V_Q} --outdirembs {output[0]} --normE {N2V_NZ} --contignames {input.contig_names_file}
         touch {output[3]}
         """
 
@@ -518,7 +533,8 @@ rule extract_neighs_from_n2v_embeddings:
         os.path.join(OUTDIR,"{key}",'tmp','n2v','assembly_alignment_graph_embeddings','embeddings.npz'),
         os.path.join(OUTDIR,"{key}",'tmp','n2v','assembly_alignment_graph_embeddings','contigs_embedded.txt'),
         os.path.join(OUTDIR,"{key}",'log','n2v','n2v_assembly_alignment_graph.finished'),
-        os.path.join(OUTDIR,"{key}",'tmp','assembly_alignment_graph.pkl')
+        os.path.join(OUTDIR,"{key}",'tmp','assembly_alignment_graph.pkl'),
+        contig_names_file = "data/sample_{key}/contigs.names.sorted"
 
     output:
         directory(os.path.join(OUTDIR,"{key}",'tmp','neighs')),
@@ -536,31 +552,29 @@ rule extract_neighs_from_n2v_embeddings:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','neighs','extract_neighs_from_n2v_embeddings.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','neighs','extract_neighs_from_n2v_embeddings.err')
-    conda:
-        'vamb_n2v_master'
+    #conda:
+    #    'vamb_n2v_master'
     shell:
         """
         python {params.path} --embs {input[0]} --contigs_embs {input[1]}\
-         --contignames {CONTIGNAMES_FILE} -g {input[3]} -r {NEIGHS_R} --neighs_outdir {output[0]}
+         --contignames {input.contig_names_file} -g {input[3]} -r {NEIGHS_R} --neighs_outdir {output[0]}
         touch {output[2]}
         """
 
-bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam", sample_id), 
-print(bamfiles)
 ## 5. Run vamb to merge the hoods
 rule run_vamb_asymmetric:
     input:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # why is this not used?
         #CONTIGS_FILE,
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
-        bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam", sample_id), 
+        bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id), 
         nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
         #os.path.join(OUTDIR,'tmp','neighs','neighs_mask_r_%s.npz'%NEIGHS_R)
 
     output:
-        #directory(os.path.join(OUTDIR,'vamb_asymmetric')),
-        #os.path.join(OUTDIR,'vamb_asymmetric','vae_clusters_within_radius_complete_unsplit.tsv'),
-        #os.path.join(OUTDIR,'vamb_asymmetric','vae_clusters_unsplit.tsv'),
+        directory(os.path.join(OUTDIR,'"{key}", vamb_asymmetric')),
+        #os.path.join(OUTDIR,,'vamb_asymmetric','vae_clusters_within_radius_complete_unsplit.tsv'), 
+        os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
         os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished')
     params:
         walltime='86400',
@@ -571,8 +585,8 @@ rule run_vamb_asymmetric:
         mem=PLAMB_MEM
     threads:
         int(plamb_threads)
-    conda:
-        'vamb_n2v_master' 
+    #conda:
+    #    'vamb_n2v_master' 
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','run_vamb_asymmetric.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','run_vamb_asymmetric.err')
@@ -598,7 +612,7 @@ rule run_geNomad:
         os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'),
         os.path.join(OUTDIR,"{key}",'tmp','geNomad','contigs.flt_aggregated_classification','contigs.flt_aggregated_classification.tsv')
     params:
-        db_geNomad="/home/projects/ku_00197/data/ptracker/dbs/genomad_db",
+        db_geNomad="genomad_db",
         walltime='86400',
         nodes='1',
         ppn='16'
@@ -609,13 +623,13 @@ rule run_geNomad:
     log:
         o = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.o'),
         e = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.e')
-    conda:
-        #'envs/blast.yaml'
-        'vamb_n2v_master'
+    #conda:
+    #    #'envs/blast.yaml'
+        #'vamb_n2v_master'
     shell:
         """
-        module load mmseqs2/release_15-6f452
-        module load aragorn/1.2.36
+        #module load mmseqs2/release_15-6f452
+        #module load aragorn/1.2.36
         genomad end-to-end --cleanup {input} {output[0]}   {params.db_geNomad} --threads {threads}
         touch {output[1]}
         """
@@ -626,12 +640,13 @@ rule classify_bins_with_geNomad:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','geNomad','contigs.flt_aggregated_classification','contigs.flt_aggregated_classification.tsv'),
         os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished'),
-        os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished')
+        os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'),
+        os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
     output:
         os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),
         os.path.join(OUTDIR,"{key}",'log','classify_bins_with_geNomad.finished')
     params:
-        path = os.path.join(SNAKEDIR, 'bin', 'classify_bins_with_geNomad.py'),
+        path = os.path.join(SNAKEDIR, 'src', 'classify_bins_with_geNomad.py'),
         walltime='86400',
         nodes='1',
         ppn=1,
@@ -639,8 +654,8 @@ rule classify_bins_with_geNomad:
         mem="1GB"
     threads:
         1
-    conda:
-        'vamb_n2v_master' 
+    #conda:
+    #    'vamb_n2v_master' 
     log:
         o=os.path.join(OUTDIR, "{key}", 'qsub','classify_bins_with_geNomad.out'),
         e=os.path.join(OUTDIR, "{key}", 'qsub','classify_bins_with_geNomad.err')
@@ -659,8 +674,8 @@ rule rename_clusters_and_hoods:
     output:
         os.path.join(OUTDIR, "{key}", 'log/rename_clusters_and_hoods.finished')
     params:
-        path_sample = os.path.join(SNAKEDIR, 'bin', 'replace_samples.py'),
-        path_cluster = os.path.join(SNAKEDIR, 'bin', 'rename_clusters.py'),
+        path_sample = os.path.join(SNAKEDIR, 'src', 'replace_samples.py'),
+        path_cluster = os.path.join(SNAKEDIR, 'src', 'rename_clusters.py'),
         walltime='86400',
         nodes='1',
         ppn='1'
@@ -669,8 +684,8 @@ rule rename_clusters_and_hoods:
         mem="1GB"
     threads:
         1
-    conda:
-        'vamb_n2v_master' 
+    #conda:
+    #    'vamb_n2v_master' 
     log:
         o=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.out'),
         e=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.err')
