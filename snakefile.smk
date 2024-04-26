@@ -116,7 +116,11 @@ rule spades:
     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
         #"rm -rf {output.outdir};"
-        "bin/SPAdes-3.15.4-Linux/bin/spades.py "
+        "bin/SPAdes-3.15.4-Linux/bin/metaspades.py "
+        # assembly to generate the benahcmark
+        "--only-assembler -t 20 -m 180 "
+        # real case 
+        #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
         "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
         "-t {threads} " # No reason to set mem, as spades just quits if it uses above the threshold
         +LOG_CMD
@@ -133,7 +137,10 @@ rule cat_contigs:
     benchmark: config["benchmark.key"]+rulename
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell: 
-        "python bin/vamb/src/concatenate.py {output} {input} -m 2000" 
+        # to generate the benahcmark
+        "cat {input} > {output}"
+        # real case 
+        #"python bin/vamb/src/concatenate.py {output} {input} -m 2000" 
         +LOG_CMD
 
 # Index resulting contig-file with minimap2
