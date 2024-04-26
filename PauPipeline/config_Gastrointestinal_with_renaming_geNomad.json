@@ -9,7 +9,7 @@
     "plamb_ppn": "30",
     "plamb_params": " -o C --gamma 0.1 -b 200 ",
     "plamb_preload": "",
-    "outdir": "/home/projects/ku_00197/people/paupie/repo/ptracker_2/ptracker/tmp/binning_outdirs/Gastrointestinal/plamb_fastn2v_ed_32_wl_10_ws_10_p_0.1_q_2.0",
+    "outdir": "data",
     "assembly_graph_dir": "/home/projects/ku_00197/data/ptracker/cache/as_mp_merged_reads_ef/Gastrointestinal/",
     "renaming_file": "/home/projects/ku_00197/people/paupie/repo/ptracker_2/ptracker/tmp/renaming_files/renamed_Gastrointestinal",
     "n2v_ed":'32',
