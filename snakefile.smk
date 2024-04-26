@@ -116,7 +116,7 @@ rule spades:
     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
         #"rm -rf {output.outdir};"
-        "bin/SPAdes-3.15.4-Linux/bin/metaplasmidspades.py "
+        "bin/SPAdes-3.15.4-Linux/bin/spades.py "
         "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
         "-t {threads} " # No reason to set mem, as spades just quits if it uses above the threshold
         +LOG_CMD
