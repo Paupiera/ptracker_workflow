@@ -65,13 +65,13 @@ MIN_CONTIG_LEN = int(config["min_contig_len"]) #get_config('min_contig_len', '20
 ASSEMBLY_GRAPHS_DIR=get_config('assembly_graph_dir','', r'.*')
 
 ## N2V parameters
-N2V_NZconfig = "weight" # config["n2v_nz"] #get_config('n2v_nz','weight', r'.*') # TODO fix in a different way.
-N2V_EDconfig = config["n2v_ed"] #get_config('n2v_ed','128', r'.*')
-N2V_WLconfig = config["n2v_wl"] #get_config('n2v_wl','10', r'.*')
-N2V_NWconfig = 50 #config["n2v_nw"] #get_config('n2v_nw','50', r'.*')
-N2V_WSconfig = config["n2v_ws"] #get_config('n2v_ws','10', r'.*')
-N2V_Pconfig = config["n2v_p"] #get_config('n2v_p','0.1', r'.*')
-N2V_Qconfig = config["n2v_q"] #get_config('n2v_q','2.0', r'.*')
+N2V_NZ= "weight" # config["n2v_nz"] #get_config('n2v_nz','weight', r'.*') # TODO fix in a different way.
+N2V_ED= config["n2v_ed"] #get_config('n2v_ed','128', r'.*')
+N2V_WL= config["n2v_wl"] #get_config('n2v_wl','10', r'.*')
+N2V_NW= 50 #config["n2v_nw"] #get_config('n2v_nw','50', r'.*')
+N2V_WS= config["n2v_ws"] #get_config('n2v_ws','10', r'.*')
+N2V_P= config["n2v_p"] #get_config('n2v_p','0.1', r'.*')
+N2V_Q= config["n2v_q"] #get_config('n2v_q','2.0', r'.*')
 
 NEIGHS_R='0.05'
 ## Binning parameters
@@ -224,25 +224,26 @@ rule sort:
     shell:
         "samtools sort {input} -o {output} "
 
-rulename="genomad"
-rule genomad:
-    input: 
-        fasta = "data/sample_{key}/contigs.flt.fna.gz", 
-    output:
-        direc = "data/sample_{key}/genomad",
-        file = "data/sample_{key}/genomad/contigs.flt_aggregated_classification",
-    params:
-        db = "genomad_db", 
-    threads: config["genomad"]["threads"]
-    resources: walltime = config["genomad"]["walltime"], mem_gb = config["genomad"]["mem_gb"]
-    #conda:
-    #    "genomad"
-    benchmark: config["benchmark.key"]+rulename
-    log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
-    shell:
-        "genomad end-to-end {input.fasta} {output.direc} {params.db} "
-        "-t {threads}"
-        + LOG_CMD
+
+# rulename="genomad"
+# rule genomad:
+#     input: 
+#         fasta = "data/sample_{key}/contigs.flt.fna.gz", 
+#     output:
+#         direc = "data/sample_{key}/genomad",
+#         file = "data/sample_{key}/genomad/contigs.flt_aggregated_classification",
+#     params:
+#         db = "genomad_db", 
+#     threads: config["genomad"]["threads"]
+#     resources: walltime = config["genomad"]["walltime"], mem_gb = config["genomad"]["mem_gb"]
+#     #conda:
+#     #    "genomad"
+#     benchmark: config["benchmark.key"]+rulename
+#     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
+#     shell:
+#         "genomad end-to-end {input.fasta} {output.direc} {params.db} "
+#         "-t {threads}"
+#         + LOG_CMD
 
 
 
@@ -362,7 +363,7 @@ rule weighted_assembly_graphs:
         #'envs/vamb.yaml'
     shell:
         """
-        python {params.path} --gfa {input[0]} --paths {input[1]} -s {wildcards.sample} -m {MIN_CONTIG_LEN}  --out {output[0]}
+        python {params.path} --gfa {input[0]} --paths {input[1]} -s {wildcards.id} -m {MIN_CONTIG_LEN}  --out {output[0]}
         touch {output[1]}
         """
 
@@ -537,14 +538,16 @@ rule extract_neighs_from_n2v_embeddings:
         touch {output[2]}
         """
 
+bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam", sample_id), 
+print(bamfiles)
 ## 5. Run vamb to merge the hoods
 rule run_vamb_asymmetric:
     input:
-        os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'),
+        notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # why is this not used?
         #CONTIGS_FILE,
-        "data/sample_{key}/contigs.flt.fna.gz",
-        ABUNDANCE_FILE,
-        os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
+        contigs = "data/sample_{key}/contigs.flt.fna.gz",
+        bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam", sample_id), 
+        nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
         #os.path.join(OUTDIR,'tmp','neighs','neighs_mask_r_%s.npz'%NEIGHS_R)
 
     output:
@@ -572,8 +575,8 @@ rule run_vamb_asymmetric:
         module unload gcc/12.2.0
         module load gcc/13.2.0
         {PLAMB_PRELOAD}
-        vamb bin vae_asy --outdir {OUTDIR}/vamb_asymmetric --fasta {input[1]} -p {threads} --rpkm {input[2]}\
-        --seed 1 --neighs {input[3]}  -m {MIN_CONTIG_LEN} {PLAMB_PARAMS}\
+        vamb bin vae_asy --outdir {OUTDIR}/vamb_asymmetric --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
+        --seed 1 --neighs {input.nb_file}  -m {MIN_CONTIG_LEN} {PLAMB_PARAMS}\
          {params.cuda}  
         touch {output}
         """

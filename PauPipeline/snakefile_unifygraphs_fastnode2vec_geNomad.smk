@@ -348,7 +348,7 @@ rule run_vamb_asymmetric:
         module unload gcc/12.2.0
         module load gcc/13.2.0
         {PLAMB_PRELOAD}
-        vamb bin vae_asy --outdir {OUTDIR}/vamb_asymmetric --fasta {input[1]} -p {threads} --rpkm {input[2]}\
+         vamb bin vae_asy --outdir {OUTDIR}/vamb_asymmetric --fasta {input[1]} -p {threads} --bamfiles {input[2]}\
         --seed 1 --neighs {input[3]}  -m {MIN_CONTIG_LEN} {PLAMB_PARAMS}\
          {params.cuda}  
         touch {output}
