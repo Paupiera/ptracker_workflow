@@ -1,9 +1,29 @@
+import pandas as pd
 configfile: "config/config.yaml"
-print(config)
+from collections import UserDict
 
-class config_dict(dict):
-    pass
-    
+
+
+
+def populate_dict_of_lists(dict_to_pop, key, id):
+    if key not in dict_to_pop:
+        dict_to_pop[key] = [id]
+    else:
+        dict_to_pop[key].append(id)
+
+df = pd.read_csv("./config/accessions.txt", sep="\s+", comment="#")
+sample_id = {}
+sample_path = {}
+for sample, id in zip(df.SAMPLE, df.ID):
+    id = str(id)
+    sample = str(sample)
+
+    populate_dict_of_lists(sample_id, sample, id)
+
+print(sample_id)
+print(sample_path)
+
+
 
 
 

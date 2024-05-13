@@ -1,0 +1,48 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job                                     count
+------------------------------------  -------
+align_contigs                               1
+all                                         1
+cat_contigs                                 1
+classify_bins_with_geNomad                  1
+create_assembly_alignment_graph             1
+dict                                        1
+extract_neighs_from_n2v_embeddings          1
+get_contig_names                            1
+index                                       1
+minimap                                     9
+n2v_assembly_alignment_graph                1
+rename_clusters_and_hoods                   1
+rename_contigs                              9
+run_geNomad                                 1
+run_vamb_asymmetric                         1
+sort                                        9
+spades                                      9
+split_reads                                 9
+weighted_alignment_graph                    1
+weighted_assembly_graphs                    9
+weighted_assembly_graphs_all_samples        1
+total                                      69
+
+Select jobs to execute...
+
+[Mon May 13 14:55:02 2024]
+rule split_reads:
+    input: data/reads/sample_7.fq.gz
+    output: data/reads/sample_7_1.fq.gz, data/reads/sample_7_2.fq.gz
+    jobid: 28
+    reason: Missing output files: data/reads/sample_7_1.fq.gz, data/reads/sample_7_2.fq.gz
+    wildcards: id=sample_7
+    threads: 8
+    resources: tmpdir=/tmp
+
+
+        zcat data/reads/sample_7.fq.gz |         paste - - - - - - - -  | tee >(cut -f 1-4 | tr "	" "
+" |         pigz --best --processes 8 > data/reads/sample_7_1.fq.gz) |         cut -f 5-8 | tr "	" "
+" | pigz --best --processes 8 > data/reads/sample_7_2.fq.gz
+        # https://gist.github.com/nathanhaigh/3521724
+       

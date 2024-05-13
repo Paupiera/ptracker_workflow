@@ -1,12 +1,14 @@
-# TODO path to files should not be thorugh symlinks -- access for other people
-# TODO add genomad til mixed
-# TODO megahit istedet for spades?
-# TODO Downloading downloas 3 files, _1 and _2 and a second - what is it.. and should it be used (likey non-paired reads something)
-# Compress non-interleved fastq files
 configfile: "config/config.yaml"
 
-from utils import expand_dir
+
+from utils import expand_dir, populate_dict_of_lists, config_dict
 import pandas as pd
+import re
+import os
+import sys
+import numpy as np
+
+config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
 
 # Constants
 LOG_CMD = " > {log.o} 2> {log.e};"
@@ -17,57 +19,17 @@ sample_id = {}
 for sample,id in zip(df.SAMPLE, df.ID):
     id = str(id)
     sample = str(sample)
-    if sample not in sample_id:
-        sample_id[sample] = [id]
-    else:
-        sample_id[sample].append(id)
+    populate_dict_of_lists(sample_id, sample, id)
 
-#
-# rulename = "download"
-# rule download:
-#     output:
-#         #"data/sample_{key}/fastq/{id}_1.fastq", # Quick fix for now.. improve it later
-#         #"data/sample_{key}/fastq/{id}_2.fastq",
-#         fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-#         rv = "data/reads/{id}_2" + config["fastq_end"],
-#         prefetched_info = temp("{id}"),
-#     params:
-#         id_download = "data/sample_{key}/fastq",
-#     group: "spades"
-#     benchmark: config["benchmark"]+rulename
-#     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
-#     shell:
-#         "bin/sratoolkit.3.0.10-ubuntu64/bin/prefetch {wildcards.id} " 
-#         +LOG_CMD+ 
-#         "bin/sratoolkit.3.0.10-ubuntu64/bin/fastq-dump {wildcards.id} -O {params.id_download} --split-3 " 
-#         +LOG_CMD+
-        #"rm -rf {wildcards.id}" # Remove the pre-fetched information after collecting the fastq files
-
-
-##  START PAU SETUP
-def get_config(name, default, regex):
-    #res = config.get(name, default).strip()
-    CONFIGFILE = "PauPipeline/config_Gastrointestinal_with_renaming_geNomad.json" # TODO delete and add info to the other configfile
-    res = CONFIGFILE
-    m = re.match(regex, res)
-    if m is None:
-        raise ValueError(
-            f'Config option \'{name}\' is \'{res}\', but must conform to regex \'{regex}\'')
-    return res
+#  Reads 
+read_fw = "data/reads/{id}_1" + config["fastq_end"] 
+read_rv = "data/reads/{id}_2" + config["fastq_end"]
 
 
 # set configurations
 ## Contig parameters
-CONTIGS_FILE=config["contigs_filtered_file"] #get_config('contigs_filtered_file','', r'.*')
-ABUNDANCE_FILE=config["abundance_file"] #get_config('abundance_file','', r'.*')
-CONTIGNAMES_FILE = config["contignames_file"] #get_config('contignames_file', '', r'.*') # file containing the sorted contignames
 CONTIGS = config["contigs"] #get_config('contigs', 'contigs.txt', r'.*') # each line is a contigs path from a given sample
 MIN_CONTIG_LEN = int(config["min_contig_len"]) #get_config('min_contig_len', '2000', r'[1-9]\d*$'))
-#MIN_IDENTITY = float(get_config('min_identity', '0.95', r'.*'))
-#SAMPLE_DATA 
-
-## Assembly graph parameters
-ASSEMBLY_GRAPHS_DIR=get_config('assembly_graph_dir','', r'.*')
 
 ## N2V parameters
 N2V_NZ= "weight" # config["n2v_nz"] #get_config('n2v_nz','weight', r'.*') # TODO fix in a different way.
@@ -79,6 +41,7 @@ N2V_P= config["n2v_p"] #get_config('n2v_p','0.1', r'.*')
 N2V_Q= config["n2v_q"] #get_config('n2v_q','2.0', r'.*')
 
 NEIGHS_R='0.05'
+
 ## Binning parameters
 PLAMB_MEM = config["plamb_mem"] #get_config('plamb_mem', '20gb', r'[1-9]\d*GB$')
 PLAMB_PPN = config["plamb_ppn"] #get_config('plamb_ppn', '10', r'[1-9]\d*(:gpus=[1-9]\d*)?$')
@@ -92,8 +55,6 @@ try:
     os.makedirs(os.path.join(OUTDIR,'log'), exist_ok=True)
 except FileExistsError:
     pass
-# END PAU SET UP
-
 
 rule all:
     input:
@@ -104,10 +65,10 @@ rule all:
         
 rule split_reads:
  input:
-       paired = "data/reads/{id}.fastq.gz",
+       paired = "data/reads/{id}.fq.gz",
  output: 
-       fw = "data/reads/{id}_1" + config["fastq_end"], 
-       rv = "data/reads/{id}_2" + config["fastq_end"],
+       fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], 
+       rv = read_rv, #"data/reads/{id}_2" + config["fastq_end"],
  threads: 8
  shell: 
        """
@@ -124,8 +85,8 @@ rule spades:
    input:
        #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
        #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
-       fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-       rv = "data/reads/{id}_2" + config["fastq_end"],
+       fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+       rv = read_rv, # "data/reads/{id}_2" + config["fastq_end"],
    output:
        outdir = directory("data/sample_{key}/spades_{id}"),
        outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
@@ -148,12 +109,21 @@ rule spades:
        +LOG_CMD
 
 
+rule rename_contigs:
+    input:
+        "data/sample_{key}/spades_{id}/contigs.fasta"
+    output:
+        "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
+    shell:
+        """
+        sed 's/^>/>S{wildcards.id}C/' {input} > {output}
+        """
 
 
 rulename="cat_contigs"
 rule cat_contigs:
     input:
-        expand_dir("data/sample_{key}/spades_{value}/contigs.fasta", sample_id)
+        expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
     output:
         "data/sample_{key}/contigs.flt.fna.gz"
     #conda: 
@@ -169,9 +139,8 @@ rule cat_contigs:
         module unload gcc/13.2.0
         module unload gcc/12.2.0
         module load gcc/13.2.0;"""
-        "python bin/vamb/src/concatenate.py {output} {input} "  # TODO should filter depending on size????
+        "python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
         +LOG_CMD
-        #"python bin/vamb/src/concatenate.py {output} {input} #--keepnames"  # TODO should filter depending on size????
 
 rule get_contig_names:
     input:
@@ -228,8 +197,10 @@ rule minimap:
     input:
         #fw = "data/sample_{key}/fastq/{id}_1.fastq", |
         #rv = "data/sample_{key}/fastq/{id}_2.fastq", | - For when downloading fastq files
-        fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-        rv = "data/reads/{id}_2" + config["fastq_end"],
+       # fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+       # rv = "data/reads/{id}_2" + config["fastq_end"],
+       fw = read_fw,
+       rv = read_rv,
 
         mmi ="data/sample_{key}/contigs.flt.mmi",
         dict = "data/sample_{key}/contigs.flt.dict"
@@ -271,39 +242,12 @@ rule sort:
         "samtools sort {input} -o {output} "
 
 
-# rulename="genomad"
-# rule genomad:
-#     input: 
-#         fasta = "data/sample_{key}/contigs.flt.fna.gz", 
-#     output:
-#         direc = "data/sample_{key}/genomad",
-#         file = "data/sample_{key}/genomad/contigs.flt_aggregated_classification",
-#     params:
-#         db = "genomad_db", 
-#     threads: config["genomad"]["threads"]
-#     resources: walltime = config["genomad"]["walltime"], mem_gb = config["genomad"]["mem_gb"]
-#     #conda:
-#     #    "genomad"
-#     benchmark: config["benchmark.key"]+rulename
-#     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
-#     shell:
-#         "genomad end-to-end {input.fasta} {output.direc} {params.db} "
-#         "-t {threads}"
-#         + LOG_CMD
-
-
-
-
 
 
 ## Pau Pipeline start
 
 
 
-import re
-import os
-import sys
-import numpy as np
 SNAKEDIR = "bin/ptracker/src/workflow"  # os.path.dirname(workflow.snakefile) # TODO should be renmamed to something more fitting
 
 
@@ -335,7 +279,7 @@ PLAMB_PPN = plamb_threads
 CUDA = len(plamb_gpus) > 0
 
 ## read in sample information ##
-SAMPLES=get_config('samples',"",r'.*')
+# SAMPLES=get_config('samples',"",r'.*')
 
 # target rule
 #rule all:
@@ -418,13 +362,11 @@ def weighted_assembly_graphs_all_samples_f(wildcards):
         sample=samples)
     return weighted_assembly_graphs_all_samples_paths
 
-a = expand_dir(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{value}.pkl'), sample_id), # TODO might be funky 
-print(a)
 # Why does this exist?
 rule weighted_assembly_graphs_all_samples:
     input:
         #weighted_assembly_graphs_all_samples_f
-        expand_dir(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{value}.pkl'), sample_id), # TODO value because method changes key:value pair
+        expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO value because method changes key:value pair
     output:
         os.path.join(OUTDIR,"{key}",'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
     params:
@@ -483,7 +425,7 @@ rule weighted_alignment_graph:
 rule create_assembly_alignment_graph:
     input:
         alignment_graph_file = os.path.join(OUTDIR,"{key}",'tmp','alignment_graph','alignment_graph.pkl'),
-        assembly_graph_files = expand_dir(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{value}.pkl'), sample_id), # TODO might be funky 
+        assembly_graph_files = expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO might be funky 
         weighted_alignment_graph_finished_log = os.path.join(OUTDIR,"{key}",'log','alignment_graph_processing','weighted_alignment_graph.finished'),
         weighted_assembly_graphs_all_samples_finished_log = os.path.join(OUTDIR,"{key}", 'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
         #assembly_graph_files =expand(os.path.join(OUTDIR,'tmp','assembly_graphs','{sample}.pkl'),sample=[sample for sample in SAMPLES.split()]),
@@ -589,7 +531,7 @@ rule run_vamb_asymmetric:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # why is this not used?
         #CONTIGS_FILE,
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
-        bamfiles = expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id), 
+        bamfiles = expand_dir("data/sample_[key]/mapped/[value].bam.sort", sample_id), 
         nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
         #os.path.join(OUTDIR,'tmp','neighs','neighs_mask_r_%s.npz'%NEIGHS_R)
 

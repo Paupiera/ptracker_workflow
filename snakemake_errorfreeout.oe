@@ -1,0 +1,66 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job                                     count
+------------------------------------  -------
+align_contigs                               1
+all                                         1
+cat_contigs                                 1
+classify_bins_with_geNomad                  1
+create_assembly_alignment_graph             1
+dict                                        1
+extract_neighs_from_n2v_embeddings          1
+get_contig_names                            1
+index                                       1
+minimap                                     1
+n2v_assembly_alignment_graph                1
+rename_clusters_and_hoods                   1
+rename_contigs                              1
+run_geNomad                                 1
+run_vamb_asymmetric                         1
+sort                                        1
+spades                                      1
+weighted_alignment_graph                    1
+weighted_assembly_graphs                    1
+weighted_assembly_graphs_all_samples        1
+total                                      20
+
+Select jobs to execute...
+
+[Mon May 13 11:21:44 2024]
+rule spades:
+    input: data/reads/errorfree_1.fastq.gz, data/reads/errorfree_2.fastq.gz
+    output: data/sample_errorfree_example/spades_errorfree, data/sample_errorfree_example/spades_errorfree/contigs.fasta, data/sample_errorfree_example/spades_errorfree/assembly_graph_after_simplification.gfa, data/sample_errorfree_example/spades_errorfree/contigs.paths
+    log: data/sample_errorfree_example/log/errorfree/e_spades, data/sample_errorfree_example/log/errorfree/o_spades
+    jobid: 6
+    benchmark: data/sample_errorfree_example/benchmark/errorfree_spades
+    reason: Forced execution
+    wildcards: key=errorfree_example, id=errorfree
+    threads: 8
+    resources: tmpdir=/tmp, walltime=0, mem_gb=0
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py --only-assembler -t 20 -m 180 -o data/sample_errorfree_example/spades_errorfree -1 data/reads/errorfree_1.fastq.gz -2 data/reads/errorfree_2.fastq.gz -t 8  > data/sample_errorfree_example/log/errorfree/o_spades 2> data/sample_errorfree_example/log/errorfree/e_spades;
+[Mon May 13 12:11:48 2024]
+Finished job 6.
+1 of 20 steps (5%) done
+Select jobs to execute...
+
+[Mon May 13 12:11:49 2024]
+rule rename_contigs:
+    input: data/sample_errorfree_example/spades_errorfree/contigs.fasta
+    output: data/sample_errorfree_example/spades_errorfree/contigs.renamed.fasta
+    jobid: 5
+    reason: Missing output files: data/sample_errorfree_example/spades_errorfree/contigs.renamed.fasta; Input files updated by another job: data/sample_errorfree_example/spades_errorfree/contigs.fasta
+    resources: tmpdir=/tmp
+
+RuleException in rule rename_contigs in file /maps/projects/rasmussen/scratch/ptracker/ptracker/snakefile.smk, line 151:
+AttributeError: 'Wildcards' object has no attribute 'key', when formatting the following:
+
+        sed 's/^>/>S{wildcards.key}C/' {input} > {output}
+        # rename the headers to >S{the key wildcard}C{oldheader} for later binsplitting
+        
+SNAKEDIR bin/ptracker/src/workflow
+(['outdir_plamb/errorfree_example/tmp/assembly_graphs/errorfree.pkl'],)
+SNAKEDIR2 bin/ptracker/src/workflow
