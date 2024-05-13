@@ -2,6 +2,7 @@
 # TODO add genomad til mixed
 # TODO megahit istedet for spades?
 # TODO Downloading downloas 3 files, _1 and _2 and a second - what is it.. and should it be used (likey non-paired reads something)
+# Compress non-interleved fastq files
 configfile: "config/config.yaml"
 
 from utils import expand_dir
@@ -21,24 +22,26 @@ for sample,id in zip(df.SAMPLE, df.ID):
     else:
         sample_id[sample].append(id)
 
-# print( expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id))
-
-#rulename = "download"
-#rule download:
-#    output:
-#        "data/sample_{key}/fastq/{id}_1.fastq", # Quick fix for now.. improve it later
-#        "data/sample_{key}/fastq/{id}_2.fastq",
-#    params:
-#        id_download = "data/sample_{key}/fastq",
-#    group: "spades"
-#    benchmark: config["benchmark"]+rulename
-#    log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
-#    shell:
-#        "/home/people/lasdan/ptracker/sratoolkit.3.0.10-ubuntu64/bin/prefetch {wildcards.id} " 
-#        +LOG_CMD+ 
-#        "/home/people/lasdan/ptracker/sratoolkit.3.0.10-ubuntu64/bin/fastq-dump {wildcards.id} -O {params.id_download} --split-3 " 
-#        +LOG_CMD+
-#        "rm -rf {wildcards.id}" # Remove the pre-fetched information after collecting the fastq files
+#
+# rulename = "download"
+# rule download:
+#     output:
+#         #"data/sample_{key}/fastq/{id}_1.fastq", # Quick fix for now.. improve it later
+#         #"data/sample_{key}/fastq/{id}_2.fastq",
+#         fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+#         rv = "data/reads/{id}_2" + config["fastq_end"],
+#         prefetched_info = temp("{id}"),
+#     params:
+#         id_download = "data/sample_{key}/fastq",
+#     group: "spades"
+#     benchmark: config["benchmark"]+rulename
+#     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
+#     shell:
+#         "bin/sratoolkit.3.0.10-ubuntu64/bin/prefetch {wildcards.id} " 
+#         +LOG_CMD+ 
+#         "bin/sratoolkit.3.0.10-ubuntu64/bin/fastq-dump {wildcards.id} -O {params.id_download} --split-3 " 
+#         +LOG_CMD+
+        #"rm -rf {wildcards.id}" # Remove the pre-fetched information after collecting the fastq files
 
 
 ##  START PAU SETUP
@@ -98,34 +101,54 @@ rule all:
         #expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id),
         #expand("data/sample_{key}/genomad/contigs.flt_aggregated_classification", key=sample_id.keys()),
         # expand("data/sample_{key}/mapped/{value}.sort.bam", key=sample_id.keys())
+        
+rule split_reads:
+ input:
+       paired = "data/reads/{id}.fastq.gz",
+ output: 
+       fw = "data/reads/{id}_1" + config["fastq_end"], 
+       rv = "data/reads/{id}_2" + config["fastq_end"],
+ threads: 8
+ shell: 
+       """
+        zcat {input.paired} | \
+        paste - - - - - - - -  | tee >(cut -f 1-4 | tr "\t" "\n" | \
+        pigz --best --processes {threads} > {output.fw}) | \
+        cut -f 5-8 | tr "\t" "\n" | pigz --best --processes {threads} > {output.rv}
+        # https://gist.github.com/nathanhaigh/3521724
+       """
+
 
 rulename = "spades"
 rule spades:
-    input:
-        #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
-        #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
-        fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-        rv = "data/reads/{id}_2" + config["fastq_end"],
-    output:
-        outdir = directory("data/sample_{key}/spades_{id}"),
-        outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
-        graph = "data/sample_{key}/spades_{id}/assembly_graph_after_simplification.gfa", # The graph Changed
-        graphinfo  = "data/sample_{key}/spades_{id}/contigs.paths", # The graph Changed
-    group: "spades"
-    threads: config["spades"]["threads"]
-    resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
-    benchmark: config["benchmark"]+rulename
-    log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
-    shell:
-        #"rm -rf {output.outdir};"
-        "bin/SPAdes-3.15.4-Linux/bin/metaspades.py "
-        # assembly to generate the benahcmark
-        "--only-assembler -t 20 -m 180 "
-        # real case 
-        #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
-        "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
-        "-t {threads} " 
-        +LOG_CMD
+   input:
+       #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
+       #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
+       fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
+       rv = "data/reads/{id}_2" + config["fastq_end"],
+   output:
+       outdir = directory("data/sample_{key}/spades_{id}"),
+       outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
+       graph = "data/sample_{key}/spades_{id}/assembly_graph_after_simplification.gfa", # The graph Changed
+       graphinfo  = "data/sample_{key}/spades_{id}/contigs.paths", # The graph Changed
+   group: "spades"
+   threads: config["spades"]["threads"]
+   resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
+   benchmark: config["benchmark"]+rulename
+   log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
+   shell:
+       #"rm -rf {output.outdir};"
+       "bin/SPAdes-3.15.4-Linux/bin/metaspades.py "
+       # assembly to generate the benchmark
+       "--only-assembler -t 20 -m 180 "
+       # real case 
+       #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
+       "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
+       "-t {threads} " 
+       +LOG_CMD
+
+
+
 
 rulename="cat_contigs"
 rule cat_contigs:
@@ -139,15 +162,16 @@ rule cat_contigs:
     benchmark: config["benchmark.key"]+rulename
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell: 
-        # to generate the benahcmark TODO fix
-        #"cat {input} | > {output}"
-        # real case 
+        ## real case 
+        # keepnames remove
+        ## to generate the benahcmark TODO fix
         """
         module unload gcc/13.2.0
         module unload gcc/12.2.0
         module load gcc/13.2.0;"""
         "python bin/vamb/src/concatenate.py {output} {input} "  # TODO should filter depending on size????
         +LOG_CMD
+        #"python bin/vamb/src/concatenate.py {output} {input} #--keepnames"  # TODO should filter depending on size????
 
 rule get_contig_names:
     input:
@@ -155,7 +179,7 @@ rule get_contig_names:
     output: 
         "data/sample_{key}/contigs.names.sorted"
     shell:
-        "zcat {input} | grep '>' | sed 's/>//' | sort  > {output} "
+        "zcat {input} | grep '>' | sed 's/>//' > {output} "
 
 
 # Index resulting contig-file with minimap2
@@ -303,8 +327,6 @@ SNAKEDIR = "bin/ptracker/src/workflow"  # os.path.dirname(workflow.snakefile) # 
 # 7. Classify bins/clusters into plasmid/organism/virus bins/clusters
 
 # Despite the steps are numerated, some of the order might change 
-
-
 
 
 # parse if GPUs is needed #
@@ -596,7 +618,7 @@ rule run_vamb_asymmetric:
         module unload gcc/12.2.0
         module load gcc/13.2.0
         {PLAMB_PRELOAD}
-        vamb bin vae_asy --outdir {OUTDIR}/vamb_asymmetric --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
+        vamb bin vae_asy --outdir data/sample_{wildcards.key}/vamb_asymmetric --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
         --seed 1 --neighs {input.nb_file}  -m {MIN_CONTIG_LEN} {PLAMB_PARAMS}\
          {params.cuda}  
         touch {output}

@@ -1,7 +1,8 @@
 SAMPLE ID
+errorfree_example errorfree
 #A ERR1924617  
 #C ERR1924618
 #C ERR1924617
 #MINI mini1
 #MINI mini2
-D 4
+#D 4
