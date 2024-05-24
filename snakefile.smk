@@ -22,8 +22,11 @@ for sample,id in zip(df.SAMPLE, df.ID):
     populate_dict_of_lists(sample_id, sample, id)
 
 #  Reads 
-read_fw = "data/reads/{id}_1" + config["fastq_end"] 
-read_rv = "data/reads/{id}_2" + config["fastq_end"]
+read_fw = "data/reads/DARWIN/qc_reads/{id}_1" + config["fastq_end"] 
+read_rv = "data/reads/DARWIN/qc_reads/{id}_2" + config["fastq_end"]
+
+read_fw_after_fastp = "data/sample_{key}/reads_fastp/{id}_1.qc.fastq.gz" 
+read_rv_after_fastp =  "data/sample_{key}/reads_fastp/{id}_2.qc.fastq.gz"
 
 
 # set configurations
@@ -58,35 +61,56 @@ except FileExistsError:
 
 rule all:
     input:
-        expand(os.path.join(OUTDIR, "{key}", 'log/rename_clusters_and_hoods.finished'), key=sample_id.keys()),
+        expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
         #expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id),
         #expand("data/sample_{key}/genomad/contigs.flt_aggregated_classification", key=sample_id.keys()),
         # expand("data/sample_{key}/mapped/{value}.sort.bam", key=sample_id.keys())
         
-rule split_reads:
- input:
-       paired = "data/reads/{id}.fq.gz",
- output: 
-       fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], 
-       rv = read_rv, #"data/reads/{id}_2" + config["fastq_end"],
- threads: 8
- shell: 
-       """
-        zcat {input.paired} | \
-        paste - - - - - - - -  | tee >(cut -f 1-4 | tr "\t" "\n" | \
-        pigz --best --processes {threads} > {output.fw}) | \
-        cut -f 5-8 | tr "\t" "\n" | pigz --best --processes {threads} > {output.rv}
-        # https://gist.github.com/nathanhaigh/3521724
-       """
+# rule split_reads:
+#  input:
+#        paired = "data/reads/{id}.fq.gz",
+#  output: 
+#        fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], 
+#        rv = read_rv, #"data/reads/{id}_2" + config["fastq_end"],
+#  threads: 8
+#  shell: 
+#        """
+#         zcat {input.paired} | \
+#         paste - - - - - - - -  | tee >(cut -f 1-4 | tr "\t" "\n" | \
+#         pigz --best --processes {threads} > {output.fw}) | \
+#         cut -f 5-8 | tr "\t" "\n" | pigz --best --processes {threads} > {output.rv}
+#         # https://gist.github.com/nathanhaigh/3521724
+#        """
 
+# TODO remember to use the fastq'edstuff later
+# TODO run with dont delete output to get stuff or -n
+rulename = "fastp"
+rule fastp:
+    input: 
+       fw = read_fw, 
+       rv = read_rv, 
+    output:
+       html = "data/sample_{key}/reads_fastp/{id}/report.html", # TODO insert stuff
+       json = "data/sample_{key}/reads_fastp/{id}/report.json",
+       fw = read_fw_after_fastp, 
+       rv = read_rv_after_fastp, 
+    threads: config["fastp"]["threads"]
+    benchmark: config["benchmark"]+rulename
+    log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
+    shell:
+            'bin/fastp -i {input.fw:q} -I {input.rv:q} '
+            '-o {output.fw:q} -O {output.rv:q} --html {output.html:q} --json {output.json:q} '
+            '--trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front '
+            '--cut_window_size 6  '
+            '--thread {threads} 2> {log:q}'
 
 rulename = "spades"
 rule spades:
    input:
        #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
        #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
-       fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-       rv = read_rv, # "data/reads/{id}_2" + config["fastq_end"],
+       fw = read_fw_after_fastp, 
+       rv = read_rv_after_fastp, 
    output:
        outdir = directory("data/sample_{key}/spades_{id}"),
        outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
@@ -101,8 +125,9 @@ rule spades:
        #"rm -rf {output.outdir};"
        "bin/SPAdes-3.15.4-Linux/bin/metaspades.py "
        # assembly to generate the benchmark
-       "--only-assembler -t 20 -m 180 "
+       #    "--only-assembler -t 20 -m 180 "
        # real case 
+       "-t 20 -m 180 "
        #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
        "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
        "-t {threads} " 
@@ -199,11 +224,11 @@ rule minimap:
         #rv = "data/sample_{key}/fastq/{id}_2.fastq", | - For when downloading fastq files
        # fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
        # rv = "data/reads/{id}_2" + config["fastq_end"],
-       fw = read_fw,
-       rv = read_rv,
+       fw = read_fw_after_fastp, 
+       rv = read_rv_after_fastp, 
 
         mmi ="data/sample_{key}/contigs.flt.mmi",
-        dict = "data/sample_{key}/contigs.flt.dict"
+        dict = "data/sample_{key}/contigs.flt.dict",
     output:
         bam = temp("data/sample_{key}/mapped/{id}.bam")
     group: "minimap"
@@ -536,10 +561,14 @@ rule run_vamb_asymmetric:
         #os.path.join(OUTDIR,'tmp','neighs','neighs_mask_r_%s.npz'%NEIGHS_R)
 
     output:
-        directory(os.path.join(OUTDIR,'"{key}", vamb_asymmetric')),
-        #os.path.join(OUTDIR,,'vamb_asymmetric','vae_clusters_within_radius_complete_unsplit.tsv'), 
-        os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
-        os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished')
+        # os.path.join(OUTDIR,,'vamb_asymmetric','vae_clusters_within_radius_complete_unsplit.tsv'), 
+        directory = directory(os.path.join(OUTDIR,"{key}", 'vamb_asymmetric')),
+        bins = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
+        finished = os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished'),
+        lengths = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','lengths.npz'),
+        # directory = directory("data/sample_{key}/vamb_asymmetric"),
+        # bins = "data/sample_{key}/vamb_asymmetric/vae_clusters_unsplit.tsv",
+        # finished = "data/sample_{key}/vamb_asymmetric/run_vamb_asymmetric.finished",
     params:
         walltime='86400',
         nodes='1',
@@ -560,7 +589,7 @@ rule run_vamb_asymmetric:
         module unload gcc/12.2.0
         module load gcc/13.2.0
         {PLAMB_PRELOAD}
-        vamb bin vae_asy --outdir data/sample_{wildcards.key}/vamb_asymmetric --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
+        vamb bin vae_asy --outdir {output.directory} --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
         --seed 1 --neighs {input.nb_file}  -m {MIN_CONTIG_LEN} {PLAMB_PARAMS}\
          {params.cuda}  
         touch {output}
@@ -606,6 +635,8 @@ rule classify_bins_with_geNomad:
         os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished'),
         os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'),
         os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
+        contignames = "data/sample_{key}/contigs.names.sorted",
+        lengths = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','lengths.npz'),
     output:
         os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),
         os.path.join(OUTDIR,"{key}",'log','classify_bins_with_geNomad.finished')
@@ -625,46 +656,45 @@ rule classify_bins_with_geNomad:
         e=os.path.join(OUTDIR, "{key}", 'qsub','classify_bins_with_geNomad.err')
     shell:
         """
-        python {params.path} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv\
-         --dflt_cls {OUTDIR}/vamb_asymmetric/vae_clusters_unsplit.tsv --scores {input[0]} --outp {output[0]} --lengths {OUTDIR}/vamb_asymmetric/lengths.npz --contignames {OUTDIR}/vamb_asymmetric/contignames
+        python {params.path} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv\
+         --dflt_cls {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit.tsv --scores {input[0]} --outp {output[0]} --lengths {input.lengths} --contignames {input.contignames}
         touch {output[1]}
         """
     
-print("SNAKEDIR2", SNAKEDIR)
 
-rule rename_clusters_and_hoods:
-    input:
-        os.path.join(OUTDIR, "{key}", 'log','classify_bins_with_geNomad.finished')
-    output:
-        os.path.join(OUTDIR, "{key}", 'log/rename_clusters_and_hoods.finished')
-    params:
-        path_sample = os.path.join(SNAKEDIR, 'src', 'replace_samples.py'),
-        path_cluster = os.path.join(SNAKEDIR, 'src', 'rename_clusters.py'),
-        walltime='86400',
-        nodes='1',
-        ppn='1'
-
-    resources:
-        mem="1GB"
-    threads:
-        1
-    #conda:
-    #    'vamb_n2v_master' 
-    log:
-        o=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.out'),
-        e=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.err')
-    shell:
-        """
-        python {params.path_cluster} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_renamed.tsv --header
-        python {params.path_cluster} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit_renamed.tsv --header
-        python {params.path_cluster} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/vamb_asymmetric/vae_clusters_unsplit_renamed.tsv  --header 
-        
-        python {params.path_cluster} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids_renamed.tsv --header
-        python {params.path_cluster} --clusters {OUTDIR}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted_renamed.tsv  --header 
-        
-        python {params.path_cluster} --clusters {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05_renamed.tsv --header
-        touch {output}
-        """
+# ## TODO fix paths
+# rule rename_clusters_and_hoods:
+#     input:
+#         os.path.join(OUTDIR, "{key}", 'log','classify_bins_with_geNomad.finished')
+#     output:
+#         os.path.join(OUTDIR, "{key}", 'log/rename_clusters_and_hoods.finished')
+#     params:
+#         path_sample = os.path.join(SNAKEDIR, 'src', 'replace_samples.py'),
+#         path_cluster = os.path.join(SNAKEDIR, 'src', 'rename_clusters.py'),
+#         walltime='86400',
+#         nodes='1',
+#         ppn='1'outdir_plamb/Urogenital/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv
+# 
+# 
+    # resources:
+    #     mem="1GB"
+    # threads:
+    #     1
+    # #conda:
+    # #    'vamb_n2v_master' 
+    # log:
+    #     o=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.out'),
+    #     e=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.err')
+    # shell:
+    #     """
+    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_renamed.tsv --header
+    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit_renamed.tsv --header
+    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_renamed.tsv  --header 
+    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids_renamed.tsv --header
+    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted_renamed.tsv  --header 
+    #     python {params.path_cluster} --clusters {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05_renamed.tsv --header
+    #     touch {output}
+    #     """
 
 
 

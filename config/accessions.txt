@@ -8,10 +8,3 @@ Urogenital sample_5
 Urogenital sample_6
 Urogenital sample_7
 Urogenital sample_8
-#errorfree_example errorfree
-#A ERR1924617  
-#C ERR1924618
-#C ERR1924617
-#MINI mini1
-#MINI mini2
-#D 4
