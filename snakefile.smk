@@ -9,12 +9,14 @@ import sys
 import numpy as np
 
 config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
+conda_env = "~/bxc755/miniconda3/envs/ptracker_pipeline4"
+shell.prefix(f"source activate {conda_env}; ")
 
 # Constants
 LOG_CMD = " > {log.o} 2> {log.e};"
 
 # Read in the sample data
-df = pd.read_csv("./config/accessions.txt", sep="\s+", comment="#")
+df = pd.read_csv(config["files"], sep="\s+", comment="#")
 sample_id = {}
 for sample,id in zip(df.SAMPLE, df.ID):
     id = str(id)
@@ -22,8 +24,8 @@ for sample,id in zip(df.SAMPLE, df.ID):
     populate_dict_of_lists(sample_id, sample, id)
 
 #  Reads 
-read_fw = "data/reads/DARWIN/qc_reads/{id}_1" + config["fastq_end"] 
-read_rv = "data/reads/DARWIN/qc_reads/{id}_2" + config["fastq_end"]
+read_fw = "data/reads/data/{id}_1" + config["fastq_end"] 
+read_rv = "data/reads/data/{id}_2" + config["fastq_end"]
 
 read_fw_after_fastp = "data/sample_{key}/reads_fastp/{id}_1.qc.fastq.gz" 
 read_rv_after_fastp =  "data/sample_{key}/reads_fastp/{id}_2.qc.fastq.gz"
@@ -58,6 +60,17 @@ try:
     os.makedirs(os.path.join(OUTDIR,'log'), exist_ok=True)
 except FileExistsError:
     pass
+
+run_test = True
+if run_test:
+    rule test_conda:
+        output: "test.delme"
+        default_target: True
+        resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
+        shell:
+            """
+            snakemake &> test.delme
+            """
 
 rule all:
     input:
@@ -133,12 +146,13 @@ rule spades:
        "-t {threads} " 
        +LOG_CMD
 
-
+rulename = "rename_contigs"
 rule rename_contigs:
     input:
         "data/sample_{key}/spades_{id}/contigs.fasta"
     output:
         "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
+    benchmark: config["benchmark"]+rulename
     shell:
         """
         sed 's/^>/>S{wildcards.id}C/' {input} > {output}
@@ -167,11 +181,13 @@ rule cat_contigs:
         "python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
         +LOG_CMD
 
+rulename = "get_contig_names"
 rule get_contig_names:
     input:
         "data/sample_{key}/contigs.flt.fna.gz"
     output: 
         "data/sample_{key}/contigs.names.sorted"
+    benchmark: config["benchmark.key"]+rulename
     shell:
         "zcat {input} | grep '>' | sed 's/>//' > {output} "
 
@@ -315,6 +331,7 @@ CUDA = len(plamb_gpus) > 0
 
 #gunzip -c {input} |blastn -query - -db {output[0]} -out {output[1]} -outfmt 6 -perc_identity 95 -num_threads {threads} -max_hsps 1000000
 # 1. Align contigs all against all 
+rulename = "align_contigs"
 rule align_contigs:
     input:
         "data/sample_{key}/contigs.flt.fna.gz",
@@ -328,7 +345,7 @@ rule align_contigs:
         nodes='1',
         ppn='8'
     resources:
-        mem='15GB'
+        mem_gb='15'
     threads:
         8
     log:
@@ -337,6 +354,7 @@ rule align_contigs:
     #conda:
         #'envs/blast.yaml'
         #'vamb_n2v_master'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         #module load ncbi-blast/2.15.0+
@@ -349,6 +367,7 @@ print("SNAKEDIR", SNAKEDIR)
         
 ## 2. Generate nx graph per sample for graphs from gfa assembly graphs
 # for each "sample"
+rulename = "weighted_assembly_graphs"
 rule weighted_assembly_graphs:
     input:
         graph = "data/sample_{key}/spades_{id}/assembly_graph_after_simplification.gfa", # The graph Changedhis created?
@@ -364,7 +383,7 @@ rule weighted_assembly_graphs:
         nodes='1',
         ppn='4'
     resources:
-        mem = '4GB'
+        mem_gb = '4'
     threads:
         4
     log:
@@ -373,6 +392,7 @@ rule weighted_assembly_graphs:
     #conda:
     #    'vamb_n2v_master'
         #'envs/vamb.yaml'
+    benchmark: config["benchmark"]+rulename
     shell:
         """
         python {params.path} --gfa {input[0]} --paths {input[1]} -s {wildcards.id} -m {MIN_CONTIG_LEN}  --out {output[0]}
@@ -388,6 +408,7 @@ def weighted_assembly_graphs_all_samples_f(wildcards):
     return weighted_assembly_graphs_all_samples_paths
 
 # Why does this exist?
+rulename = "weighted_assembly_graphs_all_samples"
 rule weighted_assembly_graphs_all_samples:
     input:
         #weighted_assembly_graphs_all_samples_f
@@ -399,7 +420,7 @@ rule weighted_assembly_graphs_all_samples:
         nodes='1',
         ppn='1'
     resources:
-        mem = '1GB'
+        mem_gb = '1'
     threads:
         1
     log:
@@ -408,6 +429,7 @@ rule weighted_assembly_graphs_all_samples:
     #conda:
     #    'vamb_n2v_master'
         #'envs/vamb.yaml'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         touch {output}
@@ -417,6 +439,7 @@ rule weighted_assembly_graphs_all_samples:
 
 
 ## 3. Genereate nx graph from the alignment graph
+rulename = "weighted_alignment_graph"
 rule weighted_alignment_graph:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','blastn','blastn_all_against_all.txt'),
@@ -430,7 +453,7 @@ rule weighted_alignment_graph:
         nodes='1',
         ppn='4'
     resources:
-        mem = '4GB'
+        mem_gb = '4'
     threads:
         4
     log:
@@ -439,6 +462,7 @@ rule weighted_alignment_graph:
     #conda:
     #    'vamb_n2v_master'
         #'envs/vamb.yaml'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         python {params.path} --blastout {input[0]} --out {output[0]}
@@ -447,6 +471,7 @@ rule weighted_alignment_graph:
 
 
 ## 4. Merge assembly graphs an alignment graph into a unified graph
+rulename = "create_assembly_alignment_graph"
 rule create_assembly_alignment_graph:
     input:
         alignment_graph_file = os.path.join(OUTDIR,"{key}",'tmp','alignment_graph','alignment_graph.pkl'),
@@ -463,7 +488,7 @@ rule create_assembly_alignment_graph:
         nodes='1',
         ppn='4'
     resources:
-        mem = '4GB'
+        mem_gb = '4'
     threads:
         4
     log:
@@ -472,6 +497,7 @@ rule create_assembly_alignment_graph:
     #conda:
     #    'vamb_n2v_master'
         #'envs/vamb.yaml'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         python {params.path} --graph_alignment {input.alignment_graph_file}  --graphs_assembly {input.assembly_graph_files} --out {output[0]} 
@@ -482,6 +508,7 @@ rule create_assembly_alignment_graph:
 
 
 ## 3. Run n2v on the per sample assembly graphs
+rulename = "n2v_assembly_alignment_graph"
 rule n2v_assembly_alignment_graph:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','assembly_alignment_graph.pkl'),
@@ -498,7 +525,7 @@ rule n2v_assembly_alignment_graph:
         nodes='1',
         ppn='8'
     resources:
-        mem = '20GB'
+        mem_gb = '20'
     threads:
         8
     log:
@@ -507,6 +534,7 @@ rule n2v_assembly_alignment_graph:
     #conda:
     #    'vamb_n2v_master'
         #'envs/vamb.yaml'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         python {params.path} -G {input[0]} --ed {N2V_ED} --nw {N2V_NW} --ws {N2V_WS} --wl {N2V_WL}\
@@ -517,6 +545,7 @@ rule n2v_assembly_alignment_graph:
 
 
 ## 4. Extract hoods from assembly graphs n2v embeddings per sample 
+rulename = "extract_neighs_from_n2v_embeddings"
 rule extract_neighs_from_n2v_embeddings:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','n2v','assembly_alignment_graph_embeddings','embeddings.npz'),
@@ -535,7 +564,7 @@ rule extract_neighs_from_n2v_embeddings:
         nodes='1',
         ppn='8'
     resources:
-        mem = '50GB'
+        mem_gb = '50'
     threads:
         8
     log:
@@ -543,6 +572,7 @@ rule extract_neighs_from_n2v_embeddings:
         e=os.path.join(OUTDIR,"{key}",'qsub','neighs','extract_neighs_from_n2v_embeddings.err')
     #conda:
     #    'vamb_n2v_master'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         python {params.path} --embs {input[0]} --contigs_embs {input[1]}\
@@ -551,6 +581,7 @@ rule extract_neighs_from_n2v_embeddings:
         """
 
 ## 5. Run vamb to merge the hoods
+rulename = "run_vamb_asymmetric"
 rule run_vamb_asymmetric:
     input:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # why is this not used?
@@ -575,7 +606,7 @@ rule run_vamb_asymmetric:
         ppn=PLAMB_PPN,
         cuda='--cuda' if CUDA else ''
     resources:
-        mem=PLAMB_MEM
+        mem_gb=PLAMB_MEM
     threads:
         int(plamb_threads)
     #conda:
@@ -583,8 +614,10 @@ rule run_vamb_asymmetric:
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','run_vamb_asymmetric.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','run_vamb_asymmetric.err')
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
+        rmdir {output.directory}
         module unload gcc/13.2.0
         module unload gcc/12.2.0
         module load gcc/13.2.0
@@ -595,7 +628,7 @@ rule run_vamb_asymmetric:
         touch {output}
         """
 
-
+rulename = "run_geNomad"
 rule run_geNomad:
     input:
         #CONTIGS_FILE
@@ -610,7 +643,7 @@ rule run_geNomad:
         nodes='1',
         ppn='16'
     resources:
-        mem='50GB'
+        mem_gb='50'
     threads:
         16
     log:
@@ -619,6 +652,7 @@ rule run_geNomad:
     #conda:
     #    #'envs/blast.yaml'
         #'vamb_n2v_master'
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         #module load mmseqs2/release_15-6f452
@@ -629,6 +663,7 @@ rule run_geNomad:
 
 
 ## 7. Classify bins/clusters into plasmid/organism/virus bins/clusters
+rulename = "classify_bins_with_geNomad"
 rule classify_bins_with_geNomad:
     input:
         os.path.join(OUTDIR,"{key}",'tmp','geNomad','contigs.flt_aggregated_classification','contigs.flt_aggregated_classification.tsv'),
@@ -646,7 +681,7 @@ rule classify_bins_with_geNomad:
         nodes='1',
         ppn=1,
     resources:
-        mem="1GB"
+        mem_gb="1"
     threads:
         1
     #conda:
@@ -654,6 +689,7 @@ rule classify_bins_with_geNomad:
     log:
         o=os.path.join(OUTDIR, "{key}", 'qsub','classify_bins_with_geNomad.out'),
         e=os.path.join(OUTDIR, "{key}", 'qsub','classify_bins_with_geNomad.err')
+    benchmark: config["benchmark.key"]+rulename
     shell:
         """
         python {params.path} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv\

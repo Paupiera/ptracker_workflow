@@ -1,6 +1,4 @@
 
-files: "./config/accessions_darwin.txt"
-
 genomad: 
   walltime:  0 
   threads:  40 # 40 is default in genomad

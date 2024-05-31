@@ -585,6 +585,7 @@ rule run_vamb_asymmetric:
         e=os.path.join(OUTDIR,"{key}",'qsub','run_vamb_asymmetric.err')
     shell:
         """
+        rmdir {output.directory}
         module unload gcc/13.2.0
         module unload gcc/12.2.0
         module load gcc/13.2.0
