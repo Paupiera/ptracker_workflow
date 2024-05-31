@@ -1,4 +1,9 @@
-snakemake -np --jobs 40 -k --snakefile snakefile.py -p --use-conda --latency-wait 60 --rerun-incomplete \
-  --cluster "qsub -l walltime={resources.walltime},nodes=1:thinnode:ppn={threads},mem={resources.mem_gb}gb"\
-" -W group_list=ku_00197 -A ku_00197 " \
-# TODO add qsub-status.py script thing
+rm snakemake_output/snakemake.oe
+dir="/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output"
+
+snakemake --rerun-incomplete -p --snakefile snakefile.smk \
+--jobs 2 --latency-wait 60 \
+--cluster "sbatch  --output={log.o}.cluster --error={log.e}.cluster --time=00:00:10 --job-name {rule}  --cpus-per-task {threads} --mem {resources.mem_gb}G "
+
+# --cluster "sbatch --time=00:00:10 --output $dir/snakemake_output/%j.o --error $dir/snakemake_output/%j.o --job-name {rule} --cpus-per-task {threads} --mem {resources.mem_gb}G" 
+#--error=$dir/%x.out 

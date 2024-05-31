@@ -9,8 +9,7 @@ import sys
 import numpy as np
 
 config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
-conda_env = "~/bxc755/miniconda3/envs/ptracker_pipeline4"
-shell.prefix(f"source activate {conda_env}; ")
+shell.prefix(f"source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
 
 # Constants
 LOG_CMD = " > {log.o} 2> {log.e};"
@@ -66,9 +65,12 @@ if run_test:
     rule test_conda:
         output: "test.delme"
         default_target: True
-        resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
+        resources: walltime = config["spades"]["walltime"], mem_gb = 1,
+        log: e = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout", o = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout"
         shell:
             """
+            echo "HELLO"
+            sleep 10
             snakemake &> test.delme
             """
 
