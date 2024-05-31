@@ -15,6 +15,33 @@ spades:
   mem_gb: 0
 fastp: 
   threads: 8 
+  walltime: 0
+  mem_gb: 0
+rename_contigs:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+cat_contigs:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+get_contig_names:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+index:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+dict:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+sort:
+  threads: 8 
+  walltime: 0
+  mem_gb: 0
+
 
 # Paths to the benchmarks and logfiles
 benchmark: "data/sample_{key}/benchmark/{id}_"

@@ -10,6 +10,7 @@ import numpy as np
 
 config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
 shell.prefix(f"source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
+# TODO can move module unload gcc here.. 
 
 # Constants
 LOG_CMD = " > {log.o} 2> {log.e};"
@@ -60,12 +61,13 @@ try:
 except FileExistsError:
     pass
 
-run_test = True
+run_test = False
 if run_test:
     rule test_conda:
         output: "test.delme"
         default_target: True
-        resources: walltime = config["spades"]["walltime"], mem_gb = 1,
+        threads: config[rulename]["threads"]
+        resources: walltime = 10, mem_gb = 1,
         log: e = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout", o = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout"
         shell:
             """
@@ -109,7 +111,8 @@ rule fastp:
        json = "data/sample_{key}/reads_fastp/{id}/report.json",
        fw = read_fw_after_fastp, 
        rv = read_rv_after_fastp, 
-    threads: config["fastp"]["threads"]
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     benchmark: config["benchmark"]+rulename
     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
@@ -131,7 +134,6 @@ rule spades:
        outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
        graph = "data/sample_{key}/spades_{id}/assembly_graph_after_simplification.gfa", # The graph Changed
        graphinfo  = "data/sample_{key}/spades_{id}/contigs.paths", # The graph Changed
-   group: "spades"
    threads: config["spades"]["threads"]
    resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
    benchmark: config["benchmark"]+rulename
@@ -145,7 +147,7 @@ rule spades:
        "-t 20 -m 180 "
        #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
        "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
-       "-t {threads} " 
+       "-t {threads} --memory {resources.mem_gb}" 
        +LOG_CMD
 
 rulename = "rename_contigs"
@@ -155,6 +157,8 @@ rule rename_contigs:
     output:
         "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
     benchmark: config["benchmark"]+rulename
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     shell:
         """
         sed 's/^>/>S{wildcards.id}C/' {input} > {output}
@@ -169,8 +173,9 @@ rule cat_contigs:
         "data/sample_{key}/contigs.flt.fna.gz"
     #conda: 
     #    "vambworks"
-    group: "spades"
     benchmark: config["benchmark.key"]+rulename
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell: 
         ## real case 
@@ -180,8 +185,9 @@ rule cat_contigs:
         module unload gcc/13.2.0
         module unload gcc/12.2.0
         module load gcc/13.2.0;"""
-        "python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
+        "python bin/vamb/src/concatenate.py {output} {input} "  # TODO should filter depending on size????
         +LOG_CMD
+        #"python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
 
 rulename = "get_contig_names"
 rule get_contig_names:
@@ -190,6 +196,9 @@ rule get_contig_names:
     output: 
         "data/sample_{key}/contigs.names.sorted"
     benchmark: config["benchmark.key"]+rulename
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell:
         "zcat {input} | grep '>' | sed 's/>//' > {output} "
 
@@ -201,11 +210,9 @@ rule index:
         contigs = "data/sample_{key}/contigs.flt.fna.gz"
     output:
         mmi = "data/sample_{key}/contigs.flt.mmi"
-    group: "spades"
-    #envmodules:
-    #    'tools',
-    #    'minimap2/2.6'
     benchmark: config["benchmark.key"]+rulename
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell:
         "minimap2 -d {output} {input} "
@@ -224,12 +231,9 @@ rule dict:
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
     output:
         "data/sample_{key}/contigs.flt.dict"
-    group: "spades"
-    #envmodules:
-    #    'tools',
-    #    'samtools/1.17',
     benchmark: config["benchmark.key"]+rulename
-    # log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     shell:
         "samtools dict {input.contigs} | cut -f1-3 > {output}"
 
@@ -249,20 +253,15 @@ rule minimap:
         dict = "data/sample_{key}/contigs.flt.dict",
     output:
         bam = temp("data/sample_{key}/mapped/{id}.bam")
-    group: "minimap"
     params:
         long_or_short_read = 'map-pb -L' if LONG_READS else 'sr',
-    #envmodules:
-    #    'tools',
-    #    'samtools/1.17',
-    #    'minimap2/2.6'
     threads: config["minimap"]["threads"]
     resources: walltime = config["minimap"]["walltime"], mem_gb = config["minimap"]["mem_gb"]
     benchmark: config["benchmark"]+rulename
     # log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
         # See comment over rule "dict" to understand what happens here
-        "minimap2 -ax {params.long_or_short_read} {input.mmi} {input.fw} {input.rv} "
+        "minimap2 -t {threads} -ax {params.long_or_short_read} {input.mmi} {input.fw} {input.rv} "
         " | grep -v '^@'"
         " | cat {input.dict} - "
         " | samtools view -F 3584 -b - " # supplementary, duplicate read, fail QC check
@@ -275,12 +274,9 @@ rule sort:
         "data/sample_{key}/mapped/{id}.bam",
     output:
         "data/sample_{key}/mapped/{id}.bam.sort",
-    group: "minimap"
-    #envmodules:
-    #    'tools',
-    #    'samtools/1.17',
+    threads: config[rulename]["threads"]
+    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
     benchmark: config["benchmark"]+rulename
-    # log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
         "samtools sort {input} -o {output} "
 
@@ -651,14 +647,9 @@ rule run_geNomad:
     log:
         o = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.o'),
         e = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.e')
-    #conda:
-    #    #'envs/blast.yaml'
-        #'vamb_n2v_master'
     benchmark: config["benchmark.key"]+rulename
     shell:
         """
-        #module load mmseqs2/release_15-6f452
-        #module load aragorn/1.2.36
         genomad end-to-end --cleanup {input} {output[0]}   {params.db_geNomad} --threads {threads}
         touch {output[1]}
         """
