@@ -1,46 +1,42 @@
 
 files: "./config/accessions_darwin.txt"
 
-genomad: 
-  walltime:  0 
-  threads:  40 # 40 is default in genomad
-  mem_gb: 0 
-minimap: 
-  walltime: "10:00:00:00" # TODO what??
-  threads: 15 # 3 is default
-  mem_gb: 15
-spades: 
-  walltime: 0
-  threads: 16 # 16 is default in metaSpades
-  mem_gb: 0
 fastp: 
+  walltime: "10-00:00:00"
   threads: 8 
-  walltime: 0
-  mem_gb: 0
-rename_contigs:
-  threads: 8 
-  walltime: 0
-  mem_gb: 0
-cat_contigs:
-  threads: 8 
-  walltime: 0
-  mem_gb: 0
-get_contig_names:
-  threads: 8 
-  walltime: 0
-  mem_gb: 0
+  mem_gb: 120
+  
+spades: 
+  walltime: "15-00:00:00"
+  threads: 16 # 16 is default in metaSpades
+  mem_gb: 245
+
 index:
   threads: 8 
-  walltime: 0
-  mem_gb: 0
-dict:
-  threads: 8 
-  walltime: 0
-  mem_gb: 0
+  mem_gb: 120
+
+minimap: 
+  walltime: "10-00:00:00"
+  threads: 16 
+  mem_gb: 245
+
 sort:
   threads: 8 
-  walltime: 0
-  mem_gb: 0
+  mem_gb: 120
+
+align_contigs:
+  threads:  8 
+  mem_gb: 120
+
+vamb_asymmetric:
+  walltime: "05-00:00:00"
+  threads: 16 
+  mem_gb: 245
+
+run_geNomad:
+  walltime: "05-00:00:00"
+  threads: 16
+  mem_gb: 245
 
 
 # Paths to the benchmarks and logfiles

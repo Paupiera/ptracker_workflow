@@ -8,9 +8,20 @@ import os
 import sys
 import numpy as np
 
-config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
+# config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
 shell.prefix(f"source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
 # TODO can move module unload gcc here.. 
+
+default_walltime = "48:00:00"
+default_threads = 1
+default_mem_gb = 15 
+
+def return_none_or_default(dic, key, default_value):
+    if dic == None:
+            return default_value
+    if dic.get(key) == None:
+            return default_value
+    return dic[key]
 
 # Constants
 LOG_CMD = " > {log.o} 2> {log.e};"
@@ -62,12 +73,21 @@ except FileExistsError:
     pass
 
 run_test = False
+
+rulename = "None"
+print(return_none_or_default(config.get(rulename), "threads", default_threads))
+
+threads_fn = lambda rulename: return_none_or_default(config.get(rulename), "threads", default_threads) 
+walltime_fn = lambda rulename: return_none_or_default(config.get(rulename), "walltime", default_walltime) 
+mem_gb_fn = lambda rulename: return_none_or_default(config.get(rulename), "mem_gb", default_mem_gb) 
+
 if run_test:
+    rulename = "None"
     rule test_conda:
         output: "test.delme"
         default_target: True
-        threads: config[rulename]["threads"]
-        resources: walltime = 10, mem_gb = 1,
+        threads: threads_fn(rulename)
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         log: e = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout", o = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout"
         shell:
             """
@@ -99,6 +119,9 @@ rule all:
 #         # https://gist.github.com/nathanhaigh/3521724
 #        """
 
+
+
+
 # TODO remember to use the fastq'edstuff later
 # TODO run with dont delete output to get stuff or -n
 rulename = "fastp"
@@ -111,8 +134,8 @@ rule fastp:
        json = "data/sample_{key}/reads_fastp/{id}/report.json",
        fw = read_fw_after_fastp, 
        rv = read_rv_after_fastp, 
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config["benchmark"]+rulename
     log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
@@ -124,21 +147,21 @@ rule fastp:
 
 rulename = "spades"
 rule spades:
-   input:
+    input:
        #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
        #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
        fw = read_fw_after_fastp, 
        rv = read_rv_after_fastp, 
-   output:
+    output:
        outdir = directory("data/sample_{key}/spades_{id}"),
        outfile = "data/sample_{key}/spades_{id}/contigs.fasta",
        graph = "data/sample_{key}/spades_{id}/assembly_graph_after_simplification.gfa", # The graph Changed
        graphinfo  = "data/sample_{key}/spades_{id}/contigs.paths", # The graph Changed
-   threads: config["spades"]["threads"]
-   resources: walltime = config["spades"]["walltime"], mem_gb = config["spades"]["mem_gb"]
-   benchmark: config["benchmark"]+rulename
-   log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
-   shell:
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    benchmark: config["benchmark"]+rulename
+    log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
+    shell:
        #"rm -rf {output.outdir};"
        "bin/SPAdes-3.15.4-Linux/bin/metaspades.py "
        # assembly to generate the benchmark
@@ -157,8 +180,8 @@ rule rename_contigs:
     output:
         "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
     benchmark: config["benchmark"]+rulename
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     shell:
         """
         sed 's/^>/>S{wildcards.id}C/' {input} > {output}
@@ -174,8 +197,8 @@ rule cat_contigs:
     #conda: 
     #    "vambworks"
     benchmark: config["benchmark.key"]+rulename
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell: 
         ## real case 
@@ -189,6 +212,7 @@ rule cat_contigs:
         +LOG_CMD
         #"python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
 
+
 rulename = "get_contig_names"
 rule get_contig_names:
     input:
@@ -196,8 +220,8 @@ rule get_contig_names:
     output: 
         "data/sample_{key}/contigs.names.sorted"
     benchmark: config["benchmark.key"]+rulename
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell:
         "zcat {input} | grep '>' | sed 's/>//' > {output} "
@@ -211,8 +235,8 @@ rule index:
     output:
         mmi = "data/sample_{key}/contigs.flt.mmi"
     benchmark: config["benchmark.key"]+rulename
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell:
         "minimap2 -d {output} {input} "
@@ -232,8 +256,8 @@ rule dict:
     output:
         "data/sample_{key}/contigs.flt.dict"
     benchmark: config["benchmark.key"]+rulename
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     shell:
         "samtools dict {input.contigs} | cut -f1-3 > {output}"
 
@@ -252,11 +276,11 @@ rule minimap:
         mmi ="data/sample_{key}/contigs.flt.mmi",
         dict = "data/sample_{key}/contigs.flt.dict",
     output:
-        bam = temp("data/sample_{key}/mapped/{id}.bam")
+        bam = "data/sample_{key}/mapped/{id}.bam"
     params:
         long_or_short_read = 'map-pb -L' if LONG_READS else 'sr',
-    threads: config["minimap"]["threads"]
-    resources: walltime = config["minimap"]["walltime"], mem_gb = config["minimap"]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config["benchmark"]+rulename
     # log: e =  config["log.e"]+rulename, o =  config["log.o"]+rulename,
     shell:
@@ -274,8 +298,8 @@ rule sort:
         "data/sample_{key}/mapped/{id}.bam",
     output:
         "data/sample_{key}/mapped/{id}.bam.sort",
-    threads: config[rulename]["threads"]
-    resources: walltime = config[rulename]["walltime"], mem_gb = config[rulename]["mem_gb"]
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config["benchmark"]+rulename
     shell:
         "samtools sort {input} -o {output} "
@@ -327,6 +351,8 @@ CUDA = len(plamb_gpus) > 0
 #        os.path.join(OUTDIR,'log/rename_clusters_and_hoods.finished')
         #os.path.join(OUTDIR,'log','classify_bins_with_geNomad.finished')
 
+
+
 #gunzip -c {input} |blastn -query - -db {output[0]} -out {output[1]} -outfmt 6 -perc_identity 95 -num_threads {threads} -max_hsps 1000000
 # 1. Align contigs all against all 
 rulename = "align_contigs"
@@ -339,13 +365,13 @@ rule align_contigs:
         os.path.join(OUTDIR,"{key}",'log/blastn/align_contigs.finished')
     params:
         db_name=os.path.join(OUTDIR,'tmp','blastn','contigs.db'), # TODO should be made?
-        walltime='86400',
-        nodes='1',
-        ppn='8'
-    resources:
-        mem_gb='15'
-    threads:
-        8
+        # walltime='86400',
+        # nodes='1',
+        # ppn='8'
+    # resources:
+    #     mem_gb='15',
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o = os.path.join(OUTDIR,"{key}",'qsub/blastn/align_contigs.o'),
         e = os.path.join(OUTDIR,"{key}",'qsub/blastn/align_contigs.e')
@@ -377,13 +403,13 @@ rule weighted_assembly_graphs:
         os.path.join(OUTDIR,"{key}", 'log','assembly_graph_processing','weighted_assembly_graphs_{id}.finished')
     params:
         path = os.path.join(SNAKEDIR, 'src', 'process_gfa.py'),
-        walltime='86400',
-        nodes='1',
-        ppn='4'
-    resources:
-        mem_gb = '4'
-    threads:
-        4
+        # walltime='86400',
+        # nodes='1',
+        # ppn='4'
+    # resources:
+    #     mem_gb = '4'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_{id}.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_{id}.err'),
@@ -413,28 +439,23 @@ rule weighted_assembly_graphs_all_samples:
         expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO value because method changes key:value pair
     output:
         os.path.join(OUTDIR,"{key}",'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
-    params:
-        walltime='86400',
-        nodes='1',
-        ppn='1'
-    resources:
-        mem_gb = '1'
-    threads:
-        1
+    # params:
+    #     walltime='86400',
+    #     nodes='1',
+    #     ppn='1'
+    # resources:
+    #     mem_gb = '1'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_all_samples.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','assembly_graph_processing','weighted_assembly_graphs_all_samples.err')
-    #conda:
-    #    'vamb_n2v_master'
-        #'envs/vamb.yaml'
     benchmark: config["benchmark.key"]+rulename
     shell:
         """
         touch {output}
         """
 # ## TODO END
-
-
 
 ## 3. Genereate nx graph from the alignment graph
 rulename = "weighted_alignment_graph"
@@ -450,10 +471,10 @@ rule weighted_alignment_graph:
         walltime='86400',
         nodes='1',
         ppn='4'
-    resources:
-        mem_gb = '4'
-    threads:
-        4
+    # resources:
+    #     mem_gb = '4'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','alignment_graph_processing','weighted_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','alignment_graph_processing','weighted_alignment_graph.err'),
@@ -482,19 +503,16 @@ rule create_assembly_alignment_graph:
         os.path.join(OUTDIR,"{key}", 'log','create_assembly_alignment_graph.finished')
     params:
         path = os.path.join(SNAKEDIR, 'src', 'merge_assembly_alignment_graphs.py'),
-        walltime='86400',
-        nodes='1',
-        ppn='4'
-    resources:
-        mem_gb = '4'
-    threads:
-        4
+        # walltime='86400',
+        # nodes='1',
+        # ppn='4'
+    # resources:
+    #     mem_gb = '4'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','create_assembly_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}", 'qsub','create_assembly_alignment_graph.err')
-    #conda:
-    #    'vamb_n2v_master'
-        #'envs/vamb.yaml'
     benchmark: config["benchmark.key"]+rulename
     shell:
         """
@@ -519,13 +537,13 @@ rule n2v_assembly_alignment_graph:
         os.path.join(OUTDIR,"{key}",'log','n2v','n2v_assembly_alignment_graph.finished')
     params:
         path = os.path.join(SNAKEDIR, 'src', 'fastnode2vec_args.py'),
-        walltime='86400',
-        nodes='1',
-        ppn='8'
-    resources:
-        mem_gb = '20'
-    threads:
-        8
+        # walltime='86400',
+        # nodes='1',
+        # ppn='8'
+#     resources:
+#    #     mem_gb = '20'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','n2v','n2v_assembly_alignment_graph.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','n2v','n2v_assembly_alignment_graph.err')
@@ -561,10 +579,10 @@ rule extract_neighs_from_n2v_embeddings:
         walltime='86400',
         nodes='1',
         ppn='8'
-    resources:
-        mem_gb = '50'
-    threads:
-        8
+    # resources:
+    #     mem_gb = '50'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o=os.path.join(OUTDIR,"{key}",'qsub','neighs','extract_neighs_from_n2v_embeddings.out'),
         e=os.path.join(OUTDIR,"{key}",'qsub','neighs','extract_neighs_from_n2v_embeddings.err')
@@ -600,13 +618,13 @@ rule run_vamb_asymmetric:
         # finished = "data/sample_{key}/vamb_asymmetric/run_vamb_asymmetric.finished",
     params:
         walltime='86400',
-        nodes='1',
-        ppn=PLAMB_PPN,
+        # nodes='1',
+        # ppn=PLAMB_PPN,
         cuda='--cuda' if CUDA else ''
-    resources:
-        mem_gb=PLAMB_MEM
-    threads:
-        int(plamb_threads)
+    # resources:
+    #     mem_gb=PLAMB_MEM
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     #conda:
     #    'vamb_n2v_master' 
     log:
@@ -637,13 +655,13 @@ rule run_geNomad:
         os.path.join(OUTDIR,"{key}",'tmp','geNomad','contigs.flt_aggregated_classification','contigs.flt_aggregated_classification.tsv')
     params:
         db_geNomad="genomad_db",
-        walltime='86400',
-        nodes='1',
-        ppn='16'
-    resources:
-        mem_gb='50'
-    threads:
-        16
+        # walltime='86400',
+        # nodes='1',
+        # ppn='16'
+    # resources:
+    #     mem_gb='50'
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     log:
         o = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.o'),
         e = os.path.join(OUTDIR,"{key}",'qsub/run_geNomad.e')
@@ -670,13 +688,13 @@ rule classify_bins_with_geNomad:
         os.path.join(OUTDIR,"{key}",'log','classify_bins_with_geNomad.finished')
     params:
         path = os.path.join(SNAKEDIR, 'src', 'classify_bins_with_geNomad.py'),
-        walltime='86400',
-        nodes='1',
-        ppn=1,
-    resources:
-        mem_gb="1"
-    threads:
-        1
+        # walltime='86400',
+        # nodes='1',
+        # ppn=1,
+    # resources:
+    #     mem_gb="1"
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     #conda:
     #    'vamb_n2v_master' 
     log:
