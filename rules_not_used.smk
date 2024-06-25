@@ -32,6 +32,21 @@ def get_config(name, default, regex):
             f'Config option \'{name}\' is \'{res}\', but must conform to regex \'{regex}\'')
     return res
 
+# rule split_reads:
+#  input:
+#        paired = "data/reads/{id}.fq.gz",
+#  output:
+#        fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"],
+#        rv = read_rv, #"data/reads/{id}_2" + config["fastq_end"],
+#  threads: 8
+#  shell:
+#        """
+#         zcat {input.paired} | \
+#         paste - - - - - - - -  | tee >(cut -f 1-4 | tr "\t" "\n" | \
+#         pigz --best --processes {threads} > {output.fw}) | \
+#         cut -f 5-8 | tr "\t" "\n" | pigz --best --processes {threads} > {output.rv}
+#         # https://gist.github.com/nathanhaigh/3521724
+#        """
 
 # rulename="genomad"
 # rule genomad:

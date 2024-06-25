@@ -1,30 +1,23 @@
 configfile: "config/config.yaml"
 
-
 from utils import expand_dir, populate_dict_of_lists, config_dict
 import pandas as pd
-import re
 import os
-import sys
-import numpy as np
 
-# config = config_dict(config) # make the config dict to a subclass of a dict which supports a method to get a default value instead of itself
-shell.prefix(f"source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
-# TODO can move module unload gcc here.. 
+shell.prefix("source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
+shell.prefix("""
+    module unload gcc/13.2.0
+    module unload gcc/12.2.0
+    module load gcc/13.2.0;
+""")
 
 default_walltime = "48:00:00"
 default_threads = 1
-default_mem_gb = 15 
+default_mem_gb = 15
 
-def return_none_or_default(dic, key, default_value):
-    if dic == None:
-            return default_value
-    if dic.get(key) == None:
-            return default_value
-    return dic[key]
-
-# Constants
-LOG_CMD = " > {log.o} 2> {log.e};"
+threads_fn = lambda rulename: config.get(rulename, "threads", default_threads)
+walltime_fn = lambda rulename: config.get(rulename, "walltime", default_walltime)
+mem_gb_fn = lambda rulename: config.get(rulename, "mem_gb", default_mem_gb)
 
 # Read in the sample data
 df = pd.read_csv(config["files"], sep="\s+", comment="#")
@@ -34,15 +27,14 @@ for sample,id in zip(df.SAMPLE, df.ID):
     sample = str(sample)
     populate_dict_of_lists(sample_id, sample, id)
 
-#  Reads 
+#  Reads
 read_fw = "data/reads/data/{id}_1" + config["fastq_end"] 
 read_rv = "data/reads/data/{id}_2" + config["fastq_end"]
 
 read_fw_after_fastp = "data/sample_{key}/reads_fastp/{id}_1.qc.fastq.gz" 
 read_rv_after_fastp =  "data/sample_{key}/reads_fastp/{id}_2.qc.fastq.gz"
 
-
-# set configurations
+# set configurations # TODO fix these
 ## Contig parameters
 CONTIGS = config["contigs"] #get_config('contigs', 'contigs.txt', r'.*') # each line is a contigs path from a given sample
 MIN_CONTIG_LEN = int(config["min_contig_len"]) #get_config('min_contig_len', '2000', r'[1-9]\d*$'))
@@ -67,34 +59,10 @@ PLAMB_PRELOAD = config["plamb_preload"] #get_config('plamb_preload', '', r'.*')
 RENAMING_FILE = config["renaming_file"] #get_config('renaming_file', '', r'.*')
 OUTDIR= "outdir_plamb" #config["outdir"] #get_config('outdir', 'outdir_plamb', r'.*') # TODO fix
 
-try:
+try: # TODO why?
     os.makedirs(os.path.join(OUTDIR,'log'), exist_ok=True)
 except FileExistsError:
     pass
-
-run_test = False
-
-rulename = "None"
-print(return_none_or_default(config.get(rulename), "threads", default_threads))
-
-threads_fn = lambda rulename: return_none_or_default(config.get(rulename), "threads", default_threads) 
-walltime_fn = lambda rulename: return_none_or_default(config.get(rulename), "walltime", default_walltime) 
-mem_gb_fn = lambda rulename: return_none_or_default(config.get(rulename), "mem_gb", default_mem_gb) 
-
-if run_test:
-    rulename = "None"
-    rule test_conda:
-        output: "test.delme"
-        default_target: True
-        threads: threads_fn(rulename)
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        log: e = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout", o = "/maps/projects/rasmussen/scratch/ptracker/ptracker/snakemake_output/imout"
-        shell:
-            """
-            echo "HELLO"
-            sleep 10
-            snakemake &> test.delme
-            """
 
 rule all:
     input:
@@ -103,24 +71,6 @@ rule all:
         #expand("data/sample_{key}/genomad/contigs.flt_aggregated_classification", key=sample_id.keys()),
         # expand("data/sample_{key}/mapped/{value}.sort.bam", key=sample_id.keys())
         
-# rule split_reads:
-#  input:
-#        paired = "data/reads/{id}.fq.gz",
-#  output: 
-#        fw = read_fw, # "data/reads/{id}_1" + config["fastq_end"], 
-#        rv = read_rv, #"data/reads/{id}_2" + config["fastq_end"],
-#  threads: 8
-#  shell: 
-#        """
-#         zcat {input.paired} | \
-#         paste - - - - - - - -  | tee >(cut -f 1-4 | tr "\t" "\n" | \
-#         pigz --best --processes {threads} > {output.fw}) | \
-#         cut -f 5-8 | tr "\t" "\n" | pigz --best --processes {threads} > {output.rv}
-#         # https://gist.github.com/nathanhaigh/3521724
-#        """
-
-
-
 
 # TODO remember to use the fastq'edstuff later
 # TODO run with dont delete output to get stuff or -n
@@ -186,7 +136,6 @@ rule rename_contigs:
         """
         sed 's/^>/>S{wildcards.id}C/' {input} > {output}
         """
-
 
 rulename="cat_contigs"
 rule cat_contigs:
@@ -268,11 +217,8 @@ rule minimap:
     input:
         #fw = "data/sample_{key}/fastq/{id}_1.fastq", |
         #rv = "data/sample_{key}/fastq/{id}_2.fastq", | - For when downloading fastq files
-       # fw = "data/reads/{id}_1" + config["fastq_end"], # Quick fix for now.. improve it later .. actually not worth it.. i guess
-       # rv = "data/reads/{id}_2" + config["fastq_end"],
-       fw = read_fw_after_fastp, 
-       rv = read_rv_after_fastp, 
-
+        fw = read_fw_after_fastp,
+        rv = read_rv_after_fastp,
         mmi ="data/sample_{key}/contigs.flt.mmi",
         dict = "data/sample_{key}/contigs.flt.dict",
     output:
@@ -305,24 +251,8 @@ rule sort:
         "samtools sort {input} -o {output} "
 
 
-
-
-## Pau Pipeline start
-
-
-
 SNAKEDIR = "bin/ptracker/src/workflow"  # os.path.dirname(workflow.snakefile) # TODO should be renmamed to something more fitting
 
-
-## This snakemake workflow executes the second part of the  p-tracker pipeline.
-# Inputs:
-# - Contig fasta file with all contigs from all samples
-# - Assembly graphs in GFA format
-# - geNomad contig scores
-# Outputs (final):
-# - Plasmid bins
-# - Organism bins
-# - Virus bins
 
 ## The pipeline is composed of the following steps:
 # 1. Align contigs all against all 
@@ -335,26 +265,14 @@ SNAKEDIR = "bin/ptracker/src/workflow"  # os.path.dirname(workflow.snakefile) # 
 
 # Despite the steps are numerated, some of the order might change 
 
-
 # parse if GPUs is needed #
 plamb_threads, sep, plamb_gpus = PLAMB_PPN.partition(':gpus=')
 PLAMB_PPN = plamb_threads
 CUDA = len(plamb_gpus) > 0
 
-## read in sample information ##
-# SAMPLES=get_config('samples',"",r'.*')
-
-# target rule
-#rule all:
-#    input:
-        #os.path.join(OUTDIR,'log/run_vamb_asymmetric.finished')
-#        os.path.join(OUTDIR,'log/rename_clusters_and_hoods.finished')
-        #os.path.join(OUTDIR,'log','classify_bins_with_geNomad.finished')
 
 
-
-#gunzip -c {input} |blastn -query - -db {output[0]} -out {output[1]} -outfmt 6 -perc_identity 95 -num_threads {threads} -max_hsps 1000000
-# 1. Align contigs all against all 
+# 1. Align contigs all against all
 rulename = "align_contigs"
 rule align_contigs:
     input:
@@ -708,47 +626,6 @@ rule classify_bins_with_geNomad:
         touch {output[1]}
         """
     
-
-# ## TODO fix paths
-# rule rename_clusters_and_hoods:
-#     input:
-#         os.path.join(OUTDIR, "{key}", 'log','classify_bins_with_geNomad.finished')
-#     output:
-#         os.path.join(OUTDIR, "{key}", 'log/rename_clusters_and_hoods.finished')
-#     params:
-#         path_sample = os.path.join(SNAKEDIR, 'src', 'replace_samples.py'),
-#         path_cluster = os.path.join(SNAKEDIR, 'src', 'rename_clusters.py'),
-#         walltime='86400',
-#         nodes='1',
-#         ppn='1'outdir_plamb/Urogenital/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv
-# 
-# 
-    # resources:
-    #     mem="1GB"
-    # threads:
-    #     1
-    # #conda:
-    # #    'vamb_n2v_master' 
-    # log:
-    #     o=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.out'),
-    #     e=os.path.join(OUTDIR, "{key}", 'qsub','rename_clusters_and_hoods.err')
-    # shell:
-    #     """
-    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_renamed.tsv --header
-    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_unsplit_renamed.tsv --header
-    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_renamed.tsv  --header 
-    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids_renamed.tsv --header
-    #     python {params.path_cluster} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit_geNomadplasclustercontigs_extracted_renamed.tsv  --header 
-    #     python {params.path_cluster} --clusters {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05.tsv --renaming_file {RENAMING_FILE} --out {OUTDIR}/tmp/neighs/hoods_clusters_r_0.05_renamed.tsv --header
-    #     touch {output}
-    #     """
-
-
-
-
-
-
-
 
 
 
