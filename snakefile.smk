@@ -141,7 +141,6 @@ rule rename_contigs:
         sed 's/^>/>S{wildcards.id}C/' {input} > {output} 2> {log}
         """
 
-print("HERE", os.path.join(config.get("benchmark", "benchmark/"), "key", rulename))
 
 rulename="cat_contigs"
 rule cat_contigs:
