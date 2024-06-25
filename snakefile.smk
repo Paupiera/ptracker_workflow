@@ -141,7 +141,6 @@ rule rename_contigs:
         sed 's/^>/>S{wildcards.id}C/' {input} > {output} 2> {log}
         """
 
-
 rulename="cat_contigs"
 rule cat_contigs:
     input: expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
