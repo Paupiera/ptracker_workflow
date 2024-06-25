@@ -38,14 +38,6 @@ run_geNomad:
   mem_gb: 245
 
 
-# Paths to the benchmarks and logfiles
-benchmark: "data/sample_{key}/benchmark/{id}_"
-log.e: "data/sample_{key}/log/{id}/e_"
-log.o: "data/sample_{key}/log/{id}/o_"
-benchmark.key: "data/sample_{key}/benchmark/"
-log.e.key: "data/sample_{key}/log/"
-log.o.key: "data/sample_{key}/log/"
-
 fastq_end: ".fastq.gz"
 
 
