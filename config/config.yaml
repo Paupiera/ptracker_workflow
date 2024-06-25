@@ -1,5 +1,4 @@
-
-files: "./config/accessions_darwin.txt"
+files: "./config/samples_paths.tsv"
 
 fastp: 
   walltime: "10-00:00:00"

@@ -1,7 +1,8 @@
 configfile: "config/config.yaml"
 
-from utils import expand_dir, populate_dict_of_lists, config_dict
+from utils import expand_dir
 import pandas as pd
+import collections
 import os
 
 shell.prefix("source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
@@ -11,52 +12,66 @@ shell.prefix("""
     module load gcc/13.2.0;
 """)
 
+# Define deault threads/walltime/mem_gb
 default_walltime = "48:00:00"
 default_threads = 1
 default_mem_gb = 15
 
-threads_fn = lambda rulename: config.get(rulename, "threads", default_threads)
-walltime_fn = lambda rulename: config.get(rulename, "walltime", default_walltime)
-mem_gb_fn = lambda rulename: config.get(rulename, "mem_gb", default_mem_gb)
+# Functions to get the config-defined threads/walltime/mem_gb for a rule and if not defined the default
+threads_fn = lambda rulename: config.get(rulename, {"threads": default_threads}).get("threads", default_threads) 
+walltime_fn  = lambda rulename: config.get(rulename, {"walltime": default_walltime}).get("walltime", default_walltime) 
+mem_gb_fn  = lambda rulename: config.get(rulename, {"mem_gb": default_mem_gb}).get("mem_gb", default_mem_gb) 
 
 # Read in the sample data
 df = pd.read_csv(config["files"], sep="\s+", comment="#")
-sample_id = {}
-for sample,id in zip(df.SAMPLE, df.ID):
+sample_id = collections.defaultdict(list)
+sample_id_path = collections.defaultdict(dict)
+for sample, id, read1, read2 in zip(df.SAMPLE, df.ID, df.READ1, df.READ2):
     id = str(id)
     sample = str(sample)
-    populate_dict_of_lists(sample_id, sample, id)
+    sample_id[sample].append(id)
+    sample_id_path[sample][id] = [read1, read2]
 
-#  Reads
-read_fw = "data/reads/data/{id}_1" + config["fastq_end"] 
-read_rv = "data/reads/data/{id}_2" + config["fastq_end"]
+# Print out run information
+print("Running for the following:")
+for sample in sample_id.keys():
+    print("-"*20)
+    print("Sample:", f"{sample}:")
+    for id in sample_id[sample]:
+        print(f"{id}:")
+        print(sample_id_path[sample][id])
+    print("-"*20)
 
+#  Define paths to the reads
+read_fw  = lambda wildcards: sample_id_path[wildcards.key][wildcards.id][0]
+read_rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.id][1]
+#  And to the reads after qc
 read_fw_after_fastp = "data/sample_{key}/reads_fastp/{id}_1.qc.fastq.gz" 
 read_rv_after_fastp =  "data/sample_{key}/reads_fastp/{id}_2.qc.fastq.gz"
 
 # set configurations # TODO fix these
 ## Contig parameters
-CONTIGS = config["contigs"] #get_config('contigs', 'contigs.txt', r'.*') # each line is a contigs path from a given sample
-MIN_CONTIG_LEN = int(config["min_contig_len"]) #get_config('min_contig_len', '2000', r'[1-9]\d*$'))
+CONTIGS = config.get("contigs") #get_config('contigs', 'contigs.txt', r'.*') # each line is a contigs path from a given sample
+MIN_CONTIG_LEN = int(config.get("min_contig_len")) #get_config('min_contig_len', '2000', r'[1-9]\d*$'))
 
 ## N2V parameters
 N2V_NZ= "weight" # config["n2v_nz"] #get_config('n2v_nz','weight', r'.*') # TODO fix in a different way.
-N2V_ED= config["n2v_ed"] #get_config('n2v_ed','128', r'.*')
-N2V_WL= config["n2v_wl"] #get_config('n2v_wl','10', r'.*')
-N2V_NW= 50 #config["n2v_nw"] #get_config('n2v_nw','50', r'.*')
-N2V_WS= config["n2v_ws"] #get_config('n2v_ws','10', r'.*')
-N2V_P= config["n2v_p"] #get_config('n2v_p','0.1', r'.*')
-N2V_Q= config["n2v_q"] #get_config('n2v_q','2.0', r'.*')
+N2V_ED= config.get("n2v_ed") #get_config('n2v_ed','128', r'.*')
+N2V_WL= config.get("n2v_wl") #get_config('n2v_wl','10', r'.*')
+N2V_NW= 50 #config.get("n2v_nw") #get_config('n2v_nw','50', r'.*')
+N2V_WS= config.get("n2v_ws") #get_config('n2v_ws','10', r'.*')
+N2V_P= config.get("n2v_p") #get_config('n2v_p','0.1', r'.*')
+N2V_Q= config.get("n2v_q") #get_config('n2v_q','2.0', r'.*')
 
 NEIGHS_R='0.05'
 
 ## Binning parameters
-PLAMB_MEM = config["plamb_mem"] #get_config('plamb_mem', '20gb', r'[1-9]\d*GB$')
-PLAMB_PPN = config["plamb_ppn"] #get_config('plamb_ppn', '10', r'[1-9]\d*(:gpus=[1-9]\d*)?$')
-PLAMB_PARAMS = config["plamb_params"] #get_config('plamb_params',' -o C --minfasta 200000  ', r'.*')
-PLAMB_PRELOAD = config["plamb_preload"] #get_config('plamb_preload', '', r'.*')
+PLAMB_MEM = config.get("plamb_mem") #get_config('plamb_mem', '20gb', r'[1-9]\d*GB$')
+PLAMB_PPN = config.get("plamb_ppn") #get_config('plamb_ppn', '10', r'[1-9]\d*(:gpus=[1-9]\d*)?$')
+PLAMB_PARAMS = config.get("plamb_params") #get_config('plamb_params',' -o C --minfasta 200000  ', r'.*')
+PLAMB_PRELOAD = config.get("plamb_preload") #get_config('plamb_preload', '', r'.*')
 
-RENAMING_FILE = config["renaming_file"] #get_config('renaming_file', '', r'.*')
+RENAMING_FILE = config.get("renaming_file") #get_config('renaming_file', '', r'.*')
 OUTDIR= "outdir_plamb" #config["outdir"] #get_config('outdir', 'outdir_plamb', r'.*') # TODO fix
 
 try: # TODO why?
@@ -67,10 +82,13 @@ except FileExistsError:
 rule all:
     input:
         expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
-        #expand_dir("data/sample_{key}/mapped/{value}.bam.sort", sample_id),
-        #expand("data/sample_{key}/genomad/contigs.flt_aggregated_classification", key=sample_id.keys()),
-        # expand("data/sample_{key}/mapped/{value}.sort.bam", key=sample_id.keys())
-        
+
+
+threads: threads_fn(rulename)
+resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+benchmark: config.get("benchmark", "benchmark/") + "{key}_{value}_" + rulename
+log: config.get("log", "log/") + "{key}_{value}_" + rulename
+
 
 # TODO remember to use the fastq'edstuff later
 # TODO run with dont delete output to get stuff or -n
@@ -99,7 +117,7 @@ rulename = "spades"
 rule spades:
     input:
        #fw = "data/sample_{key}/fastq/{id}_1.fastq",    |
-       #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is uncommented
+       #rv = "data/sample_{key}/fastq/{id}_2.fastq",    | -- For when rule download is used
        fw = read_fw_after_fastp, 
        rv = read_rv_after_fastp, 
     output:
@@ -121,7 +139,7 @@ rule spades:
        #"metaspades.py -o $OUT --12 $READS   -t 20 -m 180"
        "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
        "-t {threads} --memory {resources.mem_gb}" 
-       +LOG_CMD
+    #    +LOG_CMD
 
 rulename = "rename_contigs"
 rule rename_contigs:
@@ -158,7 +176,7 @@ rule cat_contigs:
         module unload gcc/12.2.0
         module load gcc/13.2.0;"""
         "python bin/vamb/src/concatenate.py {output} {input} "  # TODO should filter depending on size????
-        +LOG_CMD
+        # +LOG_CMD
         #"python bin/vamb/src/concatenate.py {output} {input} --keepnames"  # TODO should filter depending on size????
 
 
@@ -189,7 +207,7 @@ rule index:
     log: e =  config["log.e.key"]+rulename, o =  config["log.o.key"]+rulename,
     shell:
         "minimap2 -d {output} {input} "
-        +LOG_CMD
+        # +LOG_CMD
 
 
 # This rule creates a SAM header from a FASTA file.
