@@ -143,7 +143,8 @@ rule rename_contigs:
 
 rulename="cat_contigs"
 rule cat_contigs:
-    input: expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
+    input: lambda wildcards: expand("data/sample_{key}/spades_{id}/contigs.renamed.fasta", key=wildcards.key, id=sample_id[wildcards.key])
+        # expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
     output: "data/sample_{key}/contigs.flt.fna.gz"
     threads: threads_fn(rulename)
     params: script = "bin/vamb/src/concatenate.py"
@@ -293,8 +294,8 @@ rule weighted_assembly_graphs:
 # TODO Why does this exist?
 rulename = "weighted_assembly_graphs_all_samples"
 rule weighted_assembly_graphs_all_samples:
-    input:
-        expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), 
+    input: lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'),key=wildcards.key, id=sample_id[wildcards.key])
+        # expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), 
     output:
         os.path.join(OUTDIR,"{key}",'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
     threads: threads_fn(rulename)
@@ -332,7 +333,8 @@ rulename = "create_assembly_alignment_graph"
 rule create_assembly_alignment_graph:
     input:
         alignment_graph_file = os.path.join(OUTDIR,"{key}",'tmp','alignment_graph','alignment_graph.pkl'),
-        assembly_graph_files = expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO might be funky 
+        # assembly_graph_files = expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO might be funky 
+        lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'), key=wildcards.key, id=sample_id[wildcards.key])
         weighted_alignment_graph_finished_log = os.path.join(OUTDIR,"{key}",'log','alignment_graph_processing','weighted_alignment_graph.finished'),
         weighted_assembly_graphs_all_samples_finished_log = os.path.join(OUTDIR,"{key}", 'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
     output:
@@ -407,7 +409,8 @@ rule run_vamb_asymmetric:
     input:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # TODO why is this not used?
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
-        bamfiles = expand_dir("data/sample_[key]/mapped/[value].bam.sort", sample_id), 
+        # bamfiles = expand_dir("data/sample_[key]/mapped/[value].bam.sort", sample_id), 
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key])
         nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
     output:
         directory = directory(os.path.join(OUTDIR,"{key}", 'vamb_asymmetric')),
