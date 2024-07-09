@@ -1,10 +1,6 @@
-SAMPLE ID
-Urogenital sample_0
-Urogenital sample_1
-Urogenital sample_2
-Urogenital sample_3
-Urogenital sample_4
-Urogenital sample_5
-Urogenital sample_6
-Urogenital sample_7
-Urogenital sample_8
+SAMPLE ID READ1 READ2
+DARWIN_SUB 18097D-03-02_S0_L001_1      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-07_S0_L001_1      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-11_S0_L001_1      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-12_S0_L001_1      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-06_S0_L001_1      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz

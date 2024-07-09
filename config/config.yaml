@@ -1,4 +1,4 @@
-files: "./config/samples_paths.tsv"
+files: "./config/accessions.txt"
 
 fastp: 
   walltime: "10-00:00:00"
