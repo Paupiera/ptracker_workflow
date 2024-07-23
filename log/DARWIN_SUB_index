@@ -1,8 +1,0 @@
-[M::mm_idx_gen::10.444*1.72] collected minimizers
-[M::mm_idx_gen::13.629*1.95] sorted minimizers
-[M::main::15.365*1.85] loaded/built the index for 147437 target sequence(s)
-[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 147437
-[M::mm_idx_stat::15.736*1.83] distinct minimizers: 38982697 (40.16% are singletons); average occurrences: 3.041; average spacing: 5.371; total length: 636705806
-[M::main] Version: 2.28-r1209
-[M::main] CMD: minimap2 -d data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/contigs.flt.fna.gz
-[M::main] Real time: 27.420 sec; CPU: 29.439 sec; Peak RSS: 3.920 GB
