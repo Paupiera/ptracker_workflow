@@ -1,0 +1,658 @@
+Running for the following:
+--------------------
+Sample: DARWIN_SUB:
+18097D-03-02_S0_L001_1:
+['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_1.fastq.gz', '/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_2.fastq.gz']
+18097D-03-07_S0_L001_1:
+['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_1.fastq.gz', '/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_2.fastq.gz']
+18097D-03-11_S0_L001_1:
+['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz', '/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz']
+18097D-03-12_S0_L001_1:
+['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_1.fastq.gz', '/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_2.fastq.gz']
+18097D-03-06_S0_L001_1:
+['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz', '/maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz']
+--------------------
+Building DAG of jobs...
+Job stats:
+job                                     count
+------------------------------------  -------
+align_contigs                               1
+all                                         1
+cat_contigs                                 1
+create_assembly_alignment_graph             1
+dict                                        1
+extract_neighs_from_n2v_embeddings          1
+fastp                                       5
+get_contig_names                            1
+index                                       1
+minimap                                     5
+n2v_assembly_alignment_graph                1
+rename_contigs                              5
+run_vamb_asymmetric                         1
+sort                                        5
+spades                                      5
+weighted_alignment_graph                    1
+weighted_assembly_graphs                    5
+weighted_assembly_graphs_all_samples        1
+total                                      42
+
+
+[Tue Jul  9 13:30:17 2024]
+rule fastp:
+    input: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz, /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz
+    output: data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1/report.html, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1/report.json, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_fastp
+    jobid: 16
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_fastp
+    reason: Missing output files: data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=120
+
+bin/fastp -i /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz -I /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz -o data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz -O data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz --html data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1/report.html --json data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1/report.json --trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front --cut_window_size 6  --thread 1 2> log/DARWIN_SUB_18097D-03-11_S0_L001_1_fastp
+
+[Tue Jul  9 13:30:17 2024]
+rule fastp:
+    input: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_1.fastq.gz, /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_2.fastq.gz
+    output: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1/report.html, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1/report.json, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_fastp
+    jobid: 19
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_fastp
+    reason: Missing output files: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=120
+
+bin/fastp -i /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_1.fastq.gz -I /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_2.fastq.gz -o data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz -O data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz --html data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1/report.html --json data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1/report.json --trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front --cut_window_size 6  --thread 1 2> log/DARWIN_SUB_18097D-03-12_S0_L001_1_fastp
+
+[Tue Jul  9 13:30:17 2024]
+rule fastp:
+    input: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_1.fastq.gz, /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_2.fastq.gz
+    output: data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1/report.html, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1/report.json, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_fastp
+    jobid: 10
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_fastp
+    reason: Missing output files: data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=120
+
+bin/fastp -i /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_1.fastq.gz -I /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_2.fastq.gz -o data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz -O data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz --html data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1/report.html --json data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1/report.json --trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front --cut_window_size 6  --thread 1 2> log/DARWIN_SUB_18097D-03-02_S0_L001_1_fastp
+
+[Tue Jul  9 13:30:17 2024]
+rule fastp:
+    input: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz, /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz
+    output: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1/report.html, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1/report.json, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_fastp
+    jobid: 22
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_fastp
+    reason: Missing output files: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=120
+
+bin/fastp -i /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz -I /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz -o data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz -O data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz --html data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1/report.html --json data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1/report.json --trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front --cut_window_size 6  --thread 1 2> log/DARWIN_SUB_18097D-03-06_S0_L001_1_fastp
+
+[Tue Jul  9 13:30:17 2024]
+rule fastp:
+    input: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_1.fastq.gz, /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_2.fastq.gz
+    output: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1/report.html, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1/report.json, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_fastp
+    jobid: 13
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_fastp
+    reason: Missing output files: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=120
+
+bin/fastp -i /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_1.fastq.gz -I /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_2.fastq.gz -o data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz -O data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz --html data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1/report.html --json data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1/report.json --trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front --cut_window_size 6  --thread 1 2> log/DARWIN_SUB_18097D-03-07_S0_L001_1_fastp
+
+[Tue Jul  9 13:30:17 2024]
+rule spades:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz
+    output: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.paths
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_spades
+    jobid: 15
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_spades
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.paths; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=15-00:00:00, mem_gb=245
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py -t 20 -m 180 -o data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1 -1 data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz -2 data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz -t 1 --memory 245 > log/DARWIN_SUB_18097D-03-11_S0_L001_1_spades 
+
+[Tue Jul  9 13:30:17 2024]
+rule spades:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz
+    output: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.paths
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_spades
+    jobid: 12
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_spades
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/assembly_graph_after_simplification.gfa; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=15-00:00:00, mem_gb=245
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py -t 20 -m 180 -o data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1 -1 data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz -2 data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz -t 1 --memory 245 > log/DARWIN_SUB_18097D-03-07_S0_L001_1_spades 
+
+[Tue Jul  9 13:30:17 2024]
+rule spades:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz
+    output: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.paths
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_spades
+    jobid: 9
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_spades
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.fasta; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=15-00:00:00, mem_gb=245
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py -t 20 -m 180 -o data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1 -1 data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz -2 data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz -t 1 --memory 245 > log/DARWIN_SUB_18097D-03-02_S0_L001_1_spades 
+
+[Tue Jul  9 13:30:17 2024]
+rule spades:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz
+    output: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.paths
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_spades
+    jobid: 21
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_spades
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/assembly_graph_after_simplification.gfa; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=15-00:00:00, mem_gb=245
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py -t 20 -m 180 -o data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1 -1 data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz -2 data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz -t 1 --memory 245 > log/DARWIN_SUB_18097D-03-06_S0_L001_1_spades 
+
+[Tue Jul  9 13:30:17 2024]
+rule spades:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz
+    output: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.fasta, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.paths
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_spades
+    jobid: 18
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_spades
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.fasta; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=15-00:00:00, mem_gb=245
+
+bin/SPAdes-3.15.4-Linux/bin/metaspades.py -t 20 -m 180 -o data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1 -1 data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz -2 data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz -t 1 --memory 245 > log/DARWIN_SUB_18097D-03-12_S0_L001_1_spades 
+
+[Tue Jul  9 13:30:17 2024]
+rule rename_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.fasta
+    output: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_rename_contigs
+    jobid: 8
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_rename_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.fasta
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        sed 's/^>/>S18097D-03-02_S0_L001_1C/' data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.fasta > data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_18097D-03-02_S0_L001_1_rename_contigs
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule rename_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.fasta
+    output: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_rename_contigs
+    jobid: 17
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_rename_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.fasta
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        sed 's/^>/>S18097D-03-12_S0_L001_1C/' data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.fasta > data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_18097D-03-12_S0_L001_1_rename_contigs
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.paths
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-11_S0_L001_1.finished
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_weighted_assembly_graphs
+    jobid: 25
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_weighted_assembly_graphs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.paths
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_gfa.py --gfa data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/assembly_graph_after_simplification.gfa --paths data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.paths -s 18097D-03-11_S0_L001_1 -m 2000  --out outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl 2> log/DARWIN_SUB_18097D-03-11_S0_L001_1_weighted_assembly_graphs
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-11_S0_L001_1.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.paths
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-02_S0_L001_1.finished
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_weighted_assembly_graphs
+    jobid: 23
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_weighted_assembly_graphs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/assembly_graph_after_simplification.gfa
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_gfa.py --gfa data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/assembly_graph_after_simplification.gfa --paths data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.paths -s 18097D-03-02_S0_L001_1 -m 2000  --out outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl 2> log/DARWIN_SUB_18097D-03-02_S0_L001_1_weighted_assembly_graphs
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-02_S0_L001_1.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.paths
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-06_S0_L001_1.finished
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_weighted_assembly_graphs
+    jobid: 27
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_weighted_assembly_graphs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/assembly_graph_after_simplification.gfa
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_gfa.py --gfa data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/assembly_graph_after_simplification.gfa --paths data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.paths -s 18097D-03-06_S0_L001_1 -m 2000  --out outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl 2> log/DARWIN_SUB_18097D-03-06_S0_L001_1_weighted_assembly_graphs
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-06_S0_L001_1.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.paths
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-12_S0_L001_1.finished
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_weighted_assembly_graphs
+    jobid: 26
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_weighted_assembly_graphs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.paths
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_gfa.py --gfa data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/assembly_graph_after_simplification.gfa --paths data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.paths -s 18097D-03-12_S0_L001_1 -m 2000  --out outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl 2> log/DARWIN_SUB_18097D-03-12_S0_L001_1_weighted_assembly_graphs
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-12_S0_L001_1.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule rename_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.fasta
+    output: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_rename_contigs
+    jobid: 20
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_rename_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.fasta
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        sed 's/^>/>S18097D-03-06_S0_L001_1C/' data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.fasta > data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_18097D-03-06_S0_L001_1_rename_contigs
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule rename_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.fasta
+    output: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_rename_contigs
+    jobid: 11
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_rename_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.fasta
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        sed 's/^>/>S18097D-03-07_S0_L001_1C/' data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.fasta > data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_18097D-03-07_S0_L001_1_rename_contigs
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/assembly_graph_after_simplification.gfa, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.paths
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-07_S0_L001_1.finished
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_weighted_assembly_graphs
+    jobid: 24
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_weighted_assembly_graphs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.paths, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/assembly_graph_after_simplification.gfa
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_gfa.py --gfa data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/assembly_graph_after_simplification.gfa --paths data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.paths -s 18097D-03-07_S0_L001_1 -m 2000  --out outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl 2> log/DARWIN_SUB_18097D-03-07_S0_L001_1_weighted_assembly_graphs
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_18097D-03-07_S0_L001_1.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule rename_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.fasta
+    output: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_rename_contigs
+    jobid: 14
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_rename_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.fasta
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        sed 's/^>/>S18097D-03-11_S0_L001_1C/' data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.fasta > data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_18097D-03-11_S0_L001_1_rename_contigs
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_assembly_graphs_all_samples:
+    input: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl
+    output: outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_all_samples.finished
+    log: log/DARWIN_SUB_weighted_assembly_graphs_all_samples
+    jobid: 28
+    benchmark: benchmark/DARWIN_SUB_weighted_assembly_graphs_all_samples
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_all_samples.finished; Input files updated by another job: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        touch outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_all_samples.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule cat_contigs:
+    input: data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta
+    output: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    log: log/DARWIN_SUB_cat_contigs
+    jobid: 7
+    benchmark: benchmark/DARWIN_SUBcat_contigs
+    reason: Missing output files: data/sample_DARWIN_SUB/contigs.flt.fna.gz; Input files updated by another job: data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta, data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp
+
+python bin/vamb/src/concatenate.py data/sample_DARWIN_SUB/contigs.flt.fna.gz data/sample_DARWIN_SUB/spades_18097D-03-02_S0_L001_1/contigs.renamed.fasta data/sample_DARWIN_SUB/spades_18097D-03-07_S0_L001_1/contigs.renamed.fasta data/sample_DARWIN_SUB/spades_18097D-03-11_S0_L001_1/contigs.renamed.fasta data/sample_DARWIN_SUB/spades_18097D-03-12_S0_L001_1/contigs.renamed.fasta data/sample_DARWIN_SUB/spades_18097D-03-06_S0_L001_1/contigs.renamed.fasta 2> log/DARWIN_SUB_cat_contigs 
+
+[Tue Jul  9 13:30:17 2024]
+rule align_contigs:
+    input: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    output: outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt, outdir_plamb/DARWIN_SUB/log/blastn/align_contigs.finished
+    log: log/DARWIN_SUB_align_contigs
+    jobid: 6
+    benchmark: benchmark/DARWIN_SUB_align_contigs
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/blastn/align_contigs.finished, outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+
+        gunzip -c data/sample_DARWIN_SUB/contigs.flt.fna.gz |makeblastdb -in - -dbtype nucl -out outdir_plamb/tmp/DARWIN_SUB/blastn/contigs.db -title contigs.db 
+        gunzip -c data/sample_DARWIN_SUB/contigs.flt.fna.gz |blastn -query - -db outdir_plamb/tmp/DARWIN_SUB/blastn/contigs.db -out outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt -outfmt 6 -perc_identity 95 -num_threads 1 -max_hsps 1000000 >> log/DARWIN_SUB_align_contigs
+        touch outdir_plamb/DARWIN_SUB/log/blastn/align_contigs.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule index:
+    input: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    output: data/sample_DARWIN_SUB/contigs.flt.mmi
+    log: log/DARWIN_SUB_index
+    jobid: 32
+    benchmark: benchmark/DARWIN_SUB_index
+    reason: Missing output files: data/sample_DARWIN_SUB/contigs.flt.mmi; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+minimap2 -d data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/contigs.flt.fna.gz 2> log/DARWIN_SUB_index 
+
+[Tue Jul  9 13:30:17 2024]
+rule dict:
+    input: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    output: data/sample_DARWIN_SUB/contigs.flt.dict
+    log: log/DARWIN_SUB_dict
+    jobid: 33
+    benchmark: benchmark/DARWIN_SUB_dict
+    reason: Missing output files: data/sample_DARWIN_SUB/contigs.flt.dict; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+samtools dict data/sample_DARWIN_SUB/contigs.flt.fna.gz | cut -f1-3 > data/sample_DARWIN_SUB/contigs.flt.dict 2> log/DARWIN_SUB_dict 
+
+[Tue Jul  9 13:30:17 2024]
+rule get_contig_names:
+    input: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    output: data/sample_DARWIN_SUB/contigs.names.sorted
+    log: log/DARWIN_SUB_get_contig_names
+    jobid: 29
+    benchmark: benchmark/DARWIN_SUB_get_contig_names
+    reason: Missing output files: data/sample_DARWIN_SUB/contigs.names.sorted; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.fna.gz
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+zcat data/sample_DARWIN_SUB/contigs.flt.fna.gz | grep '>' | sed 's/>//' > data/sample_DARWIN_SUB/contigs.names.sorted 2> log/DARWIN_SUB_get_contig_names 
+
+[Tue Jul  9 13:30:17 2024]
+rule weighted_alignment_graph:
+    input: outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt, outdir_plamb/DARWIN_SUB/log/blastn/align_contigs.finished
+    output: outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl, outdir_plamb/DARWIN_SUB/log/alignment_graph_processing/weighted_alignment_graph.finished
+    log: log/DARWIN_SUB_weighted_alignment_graph
+    jobid: 5
+    benchmark: benchmark/DARWIN_SUB_weighted_alignment_graph
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl, outdir_plamb/DARWIN_SUB/log/alignment_graph_processing/weighted_alignment_graph.finished; Input files updated by another job: outdir_plamb/DARWIN_SUB/log/blastn/align_contigs.finished, outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/process_blastout.py --blastout outdir_plamb/DARWIN_SUB/tmp/blastn/blastn_all_against_all.txt --out outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl --minid 98 2> log/DARWIN_SUB_weighted_alignment_graph
+        touch outdir_plamb/DARWIN_SUB/log/alignment_graph_processing/weighted_alignment_graph.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule minimap:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_minimap
+    jobid: 39
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_minimap
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.dict
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=245
+
+minimap2 -t 1 -ax sr data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_1.qc.fastq.gz data/sample_DARWIN_SUB/reads_fastp/18097D-03-12_S0_L001_1_2.qc.fastq.gz  | grep -v '^@' | cat data/sample_DARWIN_SUB/contigs.flt.dict -  | samtools view -F 3584 -b -  > data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam 2> log/DARWIN_SUB_18097D-03-12_S0_L001_1_minimap 
+
+[Tue Jul  9 13:30:17 2024]
+rule minimap:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_minimap
+    jobid: 41
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_minimap
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.dict
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=245
+
+minimap2 -t 1 -ax sr data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_1.qc.fastq.gz data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1_2.qc.fastq.gz  | grep -v '^@' | cat data/sample_DARWIN_SUB/contigs.flt.dict -  | samtools view -F 3584 -b -  > data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam 2> log/DARWIN_SUB_18097D-03-06_S0_L001_1_minimap 
+
+[Tue Jul  9 13:30:17 2024]
+rule minimap:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_minimap
+    jobid: 31
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_minimap
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.dict
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=245
+
+minimap2 -t 1 -ax sr data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_1.qc.fastq.gz data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1_2.qc.fastq.gz  | grep -v '^@' | cat data/sample_DARWIN_SUB/contigs.flt.dict -  | samtools view -F 3584 -b -  > data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam 2> log/DARWIN_SUB_18097D-03-02_S0_L001_1_minimap 
+
+[Tue Jul  9 13:30:17 2024]
+rule minimap:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_minimap
+    jobid: 35
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_minimap
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam; Input files updated by another job: data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict, data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=245
+
+minimap2 -t 1 -ax sr data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_1.qc.fastq.gz data/sample_DARWIN_SUB/reads_fastp/18097D-03-07_S0_L001_1_2.qc.fastq.gz  | grep -v '^@' | cat data/sample_DARWIN_SUB/contigs.flt.dict -  | samtools view -F 3584 -b -  > data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam 2> log/DARWIN_SUB_18097D-03-07_S0_L001_1_minimap 
+
+[Tue Jul  9 13:30:17 2024]
+rule minimap:
+    input: data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/contigs.flt.dict
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_minimap
+    jobid: 37
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_minimap
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam; Input files updated by another job: data/sample_DARWIN_SUB/contigs.flt.mmi, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz, data/sample_DARWIN_SUB/contigs.flt.dict, data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=10-00:00:00, mem_gb=245
+
+minimap2 -t 1 -ax sr data/sample_DARWIN_SUB/contigs.flt.mmi data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_1.qc.fastq.gz data/sample_DARWIN_SUB/reads_fastp/18097D-03-11_S0_L001_1_2.qc.fastq.gz  | grep -v '^@' | cat data/sample_DARWIN_SUB/contigs.flt.dict -  | samtools view -F 3584 -b -  > data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam 2> log/DARWIN_SUB_18097D-03-11_S0_L001_1_minimap 
+
+[Tue Jul  9 13:30:17 2024]
+rule sort:
+    input: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort
+    log: log/DARWIN_SUB_18097D-03-12_S0_L001_1_sort
+    jobid: 38
+    benchmark: benchmark/DARWIN_SUB_18097D-03-12_S0_L001_1_sort
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam
+    wildcards: key=DARWIN_SUB, id=18097D-03-12_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+samtools sort data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam -o data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort 
+
+[Tue Jul  9 13:30:17 2024]
+rule sort:
+    input: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort
+    log: log/DARWIN_SUB_18097D-03-06_S0_L001_1_sort
+    jobid: 40
+    benchmark: benchmark/DARWIN_SUB_18097D-03-06_S0_L001_1_sort
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam
+    wildcards: key=DARWIN_SUB, id=18097D-03-06_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+samtools sort data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam -o data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort 
+
+[Tue Jul  9 13:30:17 2024]
+rule sort:
+    input: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort
+    log: log/DARWIN_SUB_18097D-03-02_S0_L001_1_sort
+    jobid: 30
+    benchmark: benchmark/DARWIN_SUB_18097D-03-02_S0_L001_1_sort
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam
+    wildcards: key=DARWIN_SUB, id=18097D-03-02_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+samtools sort data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam -o data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort 
+
+[Tue Jul  9 13:30:17 2024]
+rule sort:
+    input: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort
+    log: log/DARWIN_SUB_18097D-03-07_S0_L001_1_sort
+    jobid: 34
+    benchmark: benchmark/DARWIN_SUB_18097D-03-07_S0_L001_1_sort
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam
+    wildcards: key=DARWIN_SUB, id=18097D-03-07_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+samtools sort data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam -o data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort 
+
+[Tue Jul  9 13:30:17 2024]
+rule sort:
+    input: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam
+    output: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort
+    log: log/DARWIN_SUB_18097D-03-11_S0_L001_1_sort
+    jobid: 36
+    benchmark: benchmark/DARWIN_SUB_18097D-03-11_S0_L001_1_sort
+    reason: Missing output files: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam
+    wildcards: key=DARWIN_SUB, id=18097D-03-11_S0_L001_1
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=120
+
+samtools sort data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam -o data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort 
+
+[Tue Jul  9 13:30:17 2024]
+rule create_assembly_alignment_graph:
+    input: outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/alignment_graph_processing/weighted_alignment_graph.finished, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_all_samples.finished
+    output: outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl, outdir_plamb/DARWIN_SUB/log/create_assembly_alignment_graph.finished
+    log: log/DARWIN_SUB_create_assembly_alignment_graph
+    jobid: 4
+    benchmark: benchmark/DARWIN_SUB_create_assembly_alignment_graph
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/create_assembly_alignment_graph.finished, outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl; Input files updated by another job: outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl, outdir_plamb/DARWIN_SUB/log/alignment_graph_processing/weighted_alignment_graph.finished, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl, outdir_plamb/DARWIN_SUB/log/assembly_graph_processing/weighted_assembly_graphs_all_samples.finished
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/merge_assembly_alignment_graphs.py --graph_alignment outdir_plamb/DARWIN_SUB/tmp/alignment_graph/alignment_graph.pkl  --graphs_assembly outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-02_S0_L001_1.pkl outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-07_S0_L001_1.pkl outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-11_S0_L001_1.pkl outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-12_S0_L001_1.pkl outdir_plamb/DARWIN_SUB/tmp/assembly_graphs/18097D-03-06_S0_L001_1.pkl --out outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl  2> log/DARWIN_SUB_create_assembly_alignment_graph
+        touch outdir_plamb/DARWIN_SUB/log/create_assembly_alignment_graph.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule n2v_assembly_alignment_graph:
+    input: outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl, outdir_plamb/DARWIN_SUB/log/create_assembly_alignment_graph.finished, data/sample_DARWIN_SUB/contigs.names.sorted
+    output: outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/embeddings.npz, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/contigs_embedded.txt, outdir_plamb/DARWIN_SUB/log/n2v/n2v_assembly_alignment_graph.finished
+    log: log/DARWIN_SUB_n2v_assembly_alignment_graph
+    jobid: 3
+    benchmark: benchmark/DARWIN_SUB_n2v_assembly_alignment_graph
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/n2v/n2v_assembly_alignment_graph.finished, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/embeddings.npz, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/contigs_embedded.txt; Input files updated by another job: outdir_plamb/DARWIN_SUB/log/create_assembly_alignment_graph.finished, data/sample_DARWIN_SUB/contigs.names.sorted, outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/fastnode2vec_args.py -G outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl --ed 32 --nw 50 --ws 10 --wl 10         -p 0.1 -q 2.0 --outdirembs outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings --normE weight --contignames data/sample_DARWIN_SUB/contigs.names.sorted
+        touch outdir_plamb/DARWIN_SUB/log/n2v/n2v_assembly_alignment_graph.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule extract_neighs_from_n2v_embeddings:
+    input: outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/embeddings.npz, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/contigs_embedded.txt, outdir_plamb/DARWIN_SUB/log/n2v/n2v_assembly_alignment_graph.finished, outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl, data/sample_DARWIN_SUB/contigs.names.sorted
+    output: outdir_plamb/DARWIN_SUB/tmp/neighs, outdir_plamb/DARWIN_SUB/tmp/neighs/neighs_object_r_0.05.npz, outdir_plamb/DARWIN_SUB/log/neighs/extract_neighs_from_n2v_embeddings.finished
+    log: log/DARWIN_SUB_extract_neighs_from_n2v_embeddings
+    jobid: 2
+    benchmark: benchmark/DARWIN_SUB_extract_neighs_from_n2v_embeddings
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/neighs/extract_neighs_from_n2v_embeddings.finished, outdir_plamb/DARWIN_SUB/tmp/neighs/neighs_object_r_0.05.npz; Input files updated by another job: data/sample_DARWIN_SUB/contigs.names.sorted, outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/contigs_embedded.txt, outdir_plamb/DARWIN_SUB/log/n2v/n2v_assembly_alignment_graph.finished, outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/embeddings.npz
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        python bin/ptracker/src/workflow/src/embeddings_to_neighs.py --embs outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/embeddings.npz --contigs_embs outdir_plamb/DARWIN_SUB/tmp/n2v/assembly_alignment_graph_embeddings/contigs_embedded.txt         --contignames data/sample_DARWIN_SUB/contigs.names.sorted -g outdir_plamb/DARWIN_SUB/tmp/assembly_alignment_graph.pkl -r 0.05 --neighs_outdir outdir_plamb/DARWIN_SUB/tmp/neighs
+        touch outdir_plamb/DARWIN_SUB/log/neighs/extract_neighs_from_n2v_embeddings.finished
+        
+
+[Tue Jul  9 13:30:17 2024]
+rule run_vamb_asymmetric:
+    input: outdir_plamb/DARWIN_SUB/log/neighs/extract_neighs_from_n2v_embeddings.finished, data/sample_DARWIN_SUB/contigs.flt.fna.gz, data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort, outdir_plamb/DARWIN_SUB/tmp/neighs/neighs_object_r_0.05.npz
+    output: outdir_plamb/DARWIN_SUB/vamb_asymmetric, outdir_plamb/DARWIN_SUB/vamb_asymmetric/vae_clusters_unsplit.tsv, outdir_plamb/DARWIN_SUB/log/run_vamb_asymmetric.finished, outdir_plamb/DARWIN_SUB/vamb_asymmetric/lengths.npz
+    log: log/DARWIN_SUB_run_vamb_asymmetric
+    jobid: 1
+    benchmark: benchmark/DARWIN_SUB_run_vamb_asymmetric
+    reason: Missing output files: outdir_plamb/DARWIN_SUB/log/run_vamb_asymmetric.finished; Input files updated by another job: data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort, data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort, outdir_plamb/DARWIN_SUB/log/neighs/extract_neighs_from_n2v_embeddings.finished, data/sample_DARWIN_SUB/contigs.flt.fna.gz, outdir_plamb/DARWIN_SUB/tmp/neighs/neighs_object_r_0.05.npz, data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort
+    wildcards: key=DARWIN_SUB
+    resources: tmpdir=/tmp, walltime=48:00:00, mem_gb=15
+
+
+        rmdir outdir_plamb/DARWIN_SUB/vamb_asymmetric
+        
+        vamb bin vae_asy --outdir outdir_plamb/DARWIN_SUB/vamb_asymmetric --fasta data/sample_DARWIN_SUB/contigs.flt.fna.gz -p 1 --bamfiles data/sample_DARWIN_SUB/mapped/18097D-03-02_S0_L001_1.bam.sort data/sample_DARWIN_SUB/mapped/18097D-03-07_S0_L001_1.bam.sort data/sample_DARWIN_SUB/mapped/18097D-03-11_S0_L001_1.bam.sort data/sample_DARWIN_SUB/mapped/18097D-03-12_S0_L001_1.bam.sort data/sample_DARWIN_SUB/mapped/18097D-03-06_S0_L001_1.bam.sort        --seed 1 --neighs outdir_plamb/DARWIN_SUB/tmp/neighs/neighs_object_r_0.05.npz  -m 2000  -o C --gamma 0.1 -b 200            
+        touch outdir_plamb/DARWIN_SUB/vamb_asymmetric outdir_plamb/DARWIN_SUB/vamb_asymmetric/vae_clusters_unsplit.tsv outdir_plamb/DARWIN_SUB/log/run_vamb_asymmetric.finished outdir_plamb/DARWIN_SUB/vamb_asymmetric/lengths.npz
+        
+
+[Tue Jul  9 13:30:17 2024]
+localrule all:
+    input: outdir_plamb/DARWIN_SUB/log/run_vamb_asymmetric.finished
+    jobid: 0
+    reason: Input files updated by another job: outdir_plamb/DARWIN_SUB/log/run_vamb_asymmetric.finished
+    resources: tmpdir=/tmp
+
+Job stats:
+job                                     count
+------------------------------------  -------
+align_contigs                               1
+all                                         1
+cat_contigs                                 1
+create_assembly_alignment_graph             1
+dict                                        1
+extract_neighs_from_n2v_embeddings          1
+fastp                                       5
+get_contig_names                            1
+index                                       1
+minimap                                     5
+n2v_assembly_alignment_graph                1
+rename_contigs                              5
+run_vamb_asymmetric                         1
+sort                                        5
+spades                                      5
+weighted_alignment_graph                    1
+weighted_assembly_graphs                    5
+weighted_assembly_graphs_all_samples        1
+total                                      42
+
+Reasons:
+    (check individual jobs above for details)
+    input files updated by another job:
+        align_contigs, all, cat_contigs, create_assembly_alignment_graph, dict, extract_neighs_from_n2v_embeddings, get_contig_names, index, minimap, n2v_assembly_alignment_graph, rename_contigs, run_vamb_asymmetric, sort, spades, weighted_alignment_graph, weighted_assembly_graphs, weighted_assembly_graphs_all_samples
+    missing output files:
+        align_contigs, cat_contigs, create_assembly_alignment_graph, dict, extract_neighs_from_n2v_embeddings, fastp, get_contig_names, index, minimap, n2v_assembly_alignment_graph, rename_contigs, run_vamb_asymmetric, sort, spades, weighted_alignment_graph, weighted_assembly_graphs, weighted_assembly_graphs_all_samples
+
+This was a dry-run (flag -n). The order of jobs does not reflect the order of execution.

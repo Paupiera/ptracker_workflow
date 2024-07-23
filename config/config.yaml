@@ -10,6 +10,11 @@ spades:
   threads: 16 # 16 is default in metaSpades
   mem_gb: 245
 
+SCAPP: 
+  walltime: "15-00:00:00"
+  threads: 16 
+  mem_gb: 150
+
 index:
   threads: 8 
   mem_gb: 120

@@ -83,7 +83,10 @@ except FileExistsError:
 
 rule all:
     input:
-        expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        # expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
+        # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
+        expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
 
 rulename = "fastp"
 rule fastp:
@@ -143,11 +146,12 @@ rule rename_contigs:
 
 rulename="cat_contigs"
 rule cat_contigs:
-    input: lambda wildcards: expand("data/sample_{key}/spades_{id}/contigs.renamed.fasta", key=wildcards.key, id=sample_id[wildcards.key])
+    input: lambda wildcards: expand("data/sample_{key}/spades_{id}/contigs.renamed.fasta", key=wildcards.key, id=sample_id[wildcards.key]),
         # expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
     output: "data/sample_{key}/contigs.flt.fna.gz"
     threads: threads_fn(rulename)
     params: script = "bin/vamb/src/concatenate.py"
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}" + rulename
     log: config.get("log", "log/") + "{key}_" + rulename
     shell: 
@@ -294,7 +298,7 @@ rule weighted_assembly_graphs:
 # TODO Why does this exist?
 rulename = "weighted_assembly_graphs_all_samples"
 rule weighted_assembly_graphs_all_samples:
-    input: lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'),key=wildcards.key, id=sample_id[wildcards.key])
+    input: lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'),key=wildcards.key, id=sample_id[wildcards.key]),
         # expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), 
     output:
         os.path.join(OUTDIR,"{key}",'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
@@ -324,9 +328,10 @@ rule weighted_alignment_graph:
     log: config.get("log", "log/") + "{key}_" + rulename
     shell:
         """
-        python {params.path} --blastout {input[0]} --out {output[0]} 2> {log}
+        python {params.path} --blastout {input[0]} --out {output[0]} --minid 98 2> {log}
         touch {output[1]}
         """
+
 
 ## 4. Merge assembly graphs an alignment graph into a unified graph
 rulename = "create_assembly_alignment_graph"
@@ -334,7 +339,7 @@ rule create_assembly_alignment_graph:
     input:
         alignment_graph_file = os.path.join(OUTDIR,"{key}",'tmp','alignment_graph','alignment_graph.pkl'),
         # assembly_graph_files = expand_dir(os.path.join(OUTDIR,"[key]",'tmp','assembly_graphs','[value].pkl'), sample_id), # TODO might be funky 
-        lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'), key=wildcards.key, id=sample_id[wildcards.key])
+        assembly_graph_files = lambda wildcards: expand(os.path.join(OUTDIR,"{key}",'tmp','assembly_graphs','{id}.pkl'), key=wildcards.key, id=sample_id[wildcards.key]),
         weighted_alignment_graph_finished_log = os.path.join(OUTDIR,"{key}",'log','alignment_graph_processing','weighted_alignment_graph.finished'),
         weighted_assembly_graphs_all_samples_finished_log = os.path.join(OUTDIR,"{key}", 'log','assembly_graph_processing','weighted_assembly_graphs_all_samples.finished')
     output:
@@ -410,7 +415,7 @@ rule run_vamb_asymmetric:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # TODO why is this not used?
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
         # bamfiles = expand_dir("data/sample_[key]/mapped/[value].bam.sort", sample_id), 
-        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key])
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
         nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
     output:
         directory = directory(os.path.join(OUTDIR,"{key}", 'vamb_asymmetric')),
@@ -479,4 +484,51 @@ rule classify_bins_with_geNomad:
         python {params.path} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv\
          --dflt_cls {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit.tsv --scores {input[0]} --outp {output[0]} --lengths {input.lengths} --contignames {input.contignames}
         touch {output[1]}
+        """
+        
+
+
+## EXTRA FOR TESTING 
+
+rulename = "VAMB_DEFAULT"
+rule VAMB_DEFAULT:
+    input: 
+        contig = "data/sample_{key}/contigs.flt.fna.gz",
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
+    output:
+        dir = directory("data/sample_{key}/vamb_default"),
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+    log: config.get("log", "log/") + "{key}_" + rulename
+    shell:
+        """
+        rm -rf {output.dir} 
+        vamb bin default --outdir {output.dir} --fasta {input.contig} \
+        -p {threads} --bamfiles {input.bamfiles} -m 2000 
+        """
+
+
+rulename = "SCAPP"
+rule SCAPP:
+    input: 
+        graph = "data/sample_{key}/spades_{id}/assembly_graph.fastg",
+        fw = read_fw_after_fastp, 
+        rv = read_rv_after_fastp, 
+    output:
+        # scapp makes a directory first and the changes it to a file which is the output. This confuses
+        # snakemakes due it either looking for a directory or a file and then stopping the job
+        # Therefore need to look for a temp, file which is made when the job is done..
+        fake_output = "data/sample_{key}/scapp_{id}/delete_me"
+    params:
+        true_output = "data/sample_{key}/scapp_{id}/assembly_graph.confident_cycs.fasta", 
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+    log: config.get("log", "log/") + "{key}_{id}_" + rulename
+    conda: "install_scapp.yaml"
+    shell:
+        """
+        "scapp -g {input.graph} -o {params.true_output} -r1 {input.fw} -r2 {input.rv} -p {threads};"
+        "touch {output.fake_output}"
         """
