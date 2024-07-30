@@ -1,0 +1,5 @@
+SAMPLE ID READ1 READ2 CONTIG
+Airways sample.0 /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/circular_refs/Airways/simulation/2024.04.25_16.45.27_sample_0/reads/reads_noninterlaced/anonymous_reads_clean_1.fq.gz /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/circular_refs/Airways/simulation/2024.04.25_16.45.27_sample_0/reads/reads_noninterlaced/anonymous_reads_clean_2.fq.gz /maps/projects/rasmussen/scratch/ptracker/data/as_mp_merged_reads_ef_circular/Airways/S0/contigs.fasta
+Airways sample.1 /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/circular_refs/Airways/simulation/2024.04.25_16.45.27_sample_1/reads/reads_noninterlaced/anonymous_reads_clean_1.fq.gz /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/circular_refs/Airways/simulation/2024.04.25_16.45.27_sample_1/reads/reads_noninterlaced/anonymous_reads_clean_2.fq.gz  /maps/projects/rasmussen/scratch/ptracker/data/as_mp_merged_reads_ef_circular/Airways/S1/contigs.fasta
+
+# DONT NAME SAMPLES with _ !!

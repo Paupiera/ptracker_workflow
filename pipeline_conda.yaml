@@ -1,4 +1,4 @@
-name: ptracker_pipeline4
+name: vamb_v5.0.0
 
 channels:
   - conda-forge
