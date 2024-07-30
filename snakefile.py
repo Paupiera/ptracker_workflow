@@ -50,7 +50,7 @@ for sample in sample_id.keys():
 
 rule all:
     input: 
-        expand("results/{key}/vamb_from_strobealign_default_params", key=sample_id.keys()),
+        expand("results/{key}/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
     # params: a = "2"
     # shell:
     #         """
@@ -116,32 +116,40 @@ rule Strobealign_bam_default:
             """
 
 
-
+reruns = 5
+cores_per_vamb = 5
 rulename = "vamb_for_strobealign_default"
+cores_total = min(128, cores_per_vamb * reruns)
+mem_gb_total = min(1990, int((cores_total/128)*1990))
+print(f"cores_total:", cores_total, "mem_gb_total:", mem_gb_total)
+
 rule vamb_for_strobealign_default:
         input: 
             # bamfiles = expand_dir("results/[key]/strobealign_[value].sorted.bam", sample_id),
             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
             contig = "results/{key}/contigs.flt.fna",
         output:
-            dir = directory("results/{key}/vamb_from_strobealign_default_params"),
-            vamb_bins = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
-        threads: threads_fn(rulename)
+            vamb_bins = expand("results/{key}/vamb_from_strobealign_default_params_{run_id}/vae_clusters_split.tsv", run_id=list(range(1,reruns+1))),
+        params: 
+            dir_name = directory("results/{key}/vamb_from_strobealign_default_params"),
+            cores_per_vamb = cores_per_vamb,
+            reruns = reruns,
+        threads: cores_total
         log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
         conda: "vamb_works2"
         shell:
             """
-            ~/bxc755/miniconda3/bin/parallel \
+            ~/bxc755/miniconda3/bin/parallel --will-cite \
             '\
-            rm -rf {output.dir};
-            vamb bin default --outdir {output.dir} --fasta {input.contig} \
-            -p {threads} --bamfiles {input.bamfiles} -m 2000 {{}}; 
+            vamb bin default --outdir {params.dir_name}_{{}} --fasta {input.contig} \
+            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}{{}} ; 
             '\
-            ::: a b 
+            ::: $(seq 1 {params.reruns}) 
             """
-print(expand("out.{a}", a = [1,2,3]))
+
+            # rm -rf {output.dir}_{{}};
 
 # rulename = "vamb_for_strobealign_default"
 # rule vamb_for_strobealign_default:
