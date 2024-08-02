@@ -59,6 +59,23 @@ rule all:
                    key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
             expand("results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
                    key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
+<<<<<<< HEAD
+=======
+        # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
+        #        key=sample_id.keys(), rerun_id=[1,2,3], medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1], def_radius_id=[0.03, 0.05, 0.07, 0.09]) 
+# expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
+# params: a = "2"
+    # shell:
+    #         """
+    #         ~/bxc755/miniconda3/bin/parallel --will-cite --dry-run \
+    #         '\
+    #         echo {{}};
+    #         echo hvamb bin default {params.a} --fasta  \
+    #         -p  --bamfiles  -m 2000 {{}}; 
+    #         '\
+    #         ::: a b 
+    #         """
+>>>>>>> 3df0993 (now added binbench supp)
 
 rulename = "Rename_Contigs"
 rule Rename_Contigs:
