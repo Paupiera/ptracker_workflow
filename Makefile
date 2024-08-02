@@ -1,5 +1,5 @@
 all:
-	snakemake -np --snakefile snakefile.py
+	snakemake -np --snakefile snakefile.py --rerun-triggers mtime
 	
 runsnakemake:
 	snakemake -p -c4 --snakefile snakefile.py
@@ -19,6 +19,10 @@ parse_snake:
 	python parse_snakemake_output.py
 
 view:
-	python parse_snakemake_output.py tst.e | fzf --height=20% --ansi --preview "cat {}.e" | xargs -I {} less -S {}.e {}.o
+	python parse_snakemake_output.py snakemake_output/snakemake_workflow.e | fzf --height=19% --ansi --preview "cat {}.e" | xargs -I {} less -S {}.e {}.o
+
+scancel:
+	squeue  --me | grep -v NODELIST | fzf -m --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all | awk '{print $$1}' | xargs scancel
+
 
 
