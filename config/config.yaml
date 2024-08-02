@@ -17,3 +17,7 @@ binbench_minimap:
 combine_binbench:
   threads: 1 
   mem_gb: 10
+
+vamb_for_strobealign_default:
+  threads: 10 
+  mem_gb: 100

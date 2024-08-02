@@ -22,6 +22,6 @@
 module load snakemake/7.30.1
 
 snakemake --nolock --use-conda --rerun-incomplete -p --snakefile snakefile.py --conda-base-path ~/bxc755/miniconda3 --use-conda --rerun-triggers mtime \
-  --jobs 100 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
+  --jobs 20 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
   --cluster "sbatch  --output=snakemake_output/{rule}.%j.o --error=snakemake_output/{rule}.%j.e --time={resources.walltime} --job-name {rule}  --cpus-per-task {threads} --mem {resources.mem_gb}G "
 &>snakemake_output/snakemake.oe
