@@ -7,7 +7,7 @@ cluster_id = []
 with open(file, "r") as f:
     for line in f:
         match_name = re.findall(r"Error executing rule (\w+) on cluster", line)
-        match_cluster_id = re.findall(r"Submitted batch job (\d+)", line)
+        match_cluster_id = re.findall(r"Submitted batch job (\d+), jobscript: ", line)
 
         if len(match_name) > 0:
             rulename.append(match_name[0])
