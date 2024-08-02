@@ -50,10 +50,8 @@ for sample in sample_id.keys():
 
 rule all:
     input: 
-        expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-               key=sample_id.keys(), rerun_id=[1,2,3], medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1], def_radius_id=[0.03, 0.05, 0.07, 0.09]) 
-# expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
-# params: a = "2"
+        expand("results/{key}/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
+    # params: a = "2"
     # shell:
     #         """
     #         ~/bxc755/miniconda3/bin/parallel --will-cite --dry-run \
@@ -118,48 +116,38 @@ rule Strobealign_bam_default:
             """
 
 
-
-rerun_id=[1,2,3]
-medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-def_radius_id=[0.03, 0.05, 0.07, 0.09]
-
-reruns = 3
-cores_per_vamb = 10
-cores_total = min(127, cores_per_vamb * reruns)
+reruns = 5
+cores_per_vamb = 5
+rulename = "vamb_for_strobealign_default"
+cores_total = min(128, cores_per_vamb * reruns)
 mem_gb_total = min(1990, int((cores_total/128)*1990))
 print(f"cores_total:", cores_total, "mem_gb_total:", mem_gb_total)
 
-rulename = "vamb_for_strobealign_default"
 rule vamb_for_strobealign_default:
         input: 
+            # bamfiles = expand_dir("results/[key]/strobealign_[value].sorted.bam", sample_id),
             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
             contig = "results/{key}/contigs.flt.fna",
         output:
-            vamb_bins = expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-                               rerun_id=rerun_id,key="{key}", medioid_id="medioid_id", def_radius_id="def_radius_id")
+            vamb_bins = expand("results/{key}/vamb_from_strobealign_default_params_{run_id}/vae_clusters_split.tsv", run_id=list(range(1,reruns+1))),
         params: 
-            dir_name = directory("results/{key}/vamb_runs/vamb_from_strobealign_default_params"),
+            dir_name = directory("results/{key}/vamb_from_strobealign_default_params"),
             cores_per_vamb = cores_per_vamb,
             reruns = reruns,
         threads: cores_total
         log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
-        conda: "vamb_changed_v5.0.0"
-
+        conda: "vamb_works2"
         shell:
             """
-            ~/bxc755/miniconda3/bin/parallel  --will-cite \
+            ~/bxc755/miniconda3/bin/parallel --will-cite \
             '\
-            export _MEDOID_RADIUS={wildcards.medioid_id}
-            export _DEFAULT_RADIUS={wildcards.def_radius_id}
-            rm -rf {params.dir_name}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id}
-            vamb bin default --outdir {params.dir_name}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
-            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
+            vamb bin default --outdir {params.dir_name}_{{}} --fasta {input.contig} \
+            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}{{}} ; 
             '\
-            ::: $(seq 1 {params.reruns})  
+            ::: $(seq 1 {params.reruns}) 
             """
-
 
 # rulename = "get_time"
 # rule get_time:
@@ -178,41 +166,11 @@ rule vamb_for_strobealign_default:
 #             cat log/Airways_vamb_for_strobealign_default2 | grep -E "Clustered contigs in .* seconds." | cut -d " " -f12,13 \
 #             | awk '{print $1, $2, "A"}'
 #             """
-
-
-
-# fast vamb -n 5 -l 2
-# MEDIOID 0.06 now
-# ::: 0.05 0.06 0.07 0.08 0.09 0.1
-# DEFAULT_RADIUS  0.05 
-# ::: 0.03 0.05 0.07 0.09 
-
-# ::: $(seq 1 {params.reruns})  
-# TODO remove -e 10
-
             # rm -rf {output.dir}_{{}};
 
 # rulename = "vamb_for_strobealign_default"
 # rule vamb_for_strobealign_default:
 #         input: 
-#             # bamfiles = expand_dir("results/[key]/strobealign_[value].sorted.bam", sample_id),
-#             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
-#             contig = "results/{key}/contigs.flt.fna",
-#         output:
-#             dir = directory("results/{key}/vamb_from_strobealign_default_params"),
-#             vamb_bins = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
-#         threads: threads_fn(rulename)
-#         log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-#         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-#         conda: "vamb_works2"
-#         shell:
-#             """
-#             rm -rf {output.dir} 
-#             vamb bin default --outdir {output.dir} --fasta {input.contig} \
-#             -p {threads} --bamfiles {input.bamfiles} -m 2000 
-#             """
-# print(expand("out.{a}", a = [1,2,3]))
 
 # rulename="binbench_minimap"
 # rule binbench_minimap:
@@ -227,7 +185,7 @@ rule vamb_for_strobealign_default:
 #         # bins_renamed_strob_def = "results/{key}/vamb_from_strobealign_default_params/bins_renamed.txt",
 #         # bins_renamed_aemb = "results/{key}/vamb_from_strobealign_aemb/bins_renamed.txt",
 #     threads: threads_fn(rulename)
-#     log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
+#     log: return_none_or_default(config, "log", "log/b)+"{key}_" + rulename
 #     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
 #     benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
 #     shell: 
@@ -254,3 +212,4 @@ rule vamb_for_strobealign_default:
 #         ./Binbench.jl {input.ref}  false          {input.vamb_bins_strobealign_default}.renamed    false          >> {output.results}
 #         ./Binbench.jl {input.ref}  false          {input.vamb_bins_aemb}.renamed    false          >> {output.results}
 #         """
+#
