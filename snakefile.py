@@ -48,14 +48,17 @@ for sample in sample_id.keys():
         print(sample_id_path[sample][id])
     print("-"*20)
 
-rerun_id=[1,2,3]
+reruns = 3
+rerun_id=list(range(1,reruns+1))
 medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
 def_radius_id=[0.03, 0.05, 0.07, 0.09]
 
 rule all:
     input: 
             expand("results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
-                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id)
+                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
+            expand("results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
+                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
         # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
         #        key=sample_id.keys(), rerun_id=[1,2,3], medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1], def_radius_id=[0.03, 0.05, 0.07, 0.09]) 
 # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
@@ -124,9 +127,6 @@ rule Strobealign_bam_default:
             """
 
 
-
-
-reruns = 3
 cores_per_vamb = 10
 cores_total = min(127, cores_per_vamb * reruns)
 mem_gb_total = min(1990, int((cores_total/128)*1990))
@@ -176,6 +176,28 @@ rule get_time:
             """
 
 
+rulename="binbench_minimap"
+rule binbench_minimap:
+    input:
+        vamb_bins_minimap = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
+        # vamb_bins_minimap = "results/{key}/vamb_from_minimap/vae_clusters_split.tsv",
+        # vamb_bins_strobealign_default = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
+        # vamb_bins_aemb = "results/{key}/vamb_from_strobealign_aemb/vae_clusters_split.tsv",
+        ref = "/maps/projects/rasmussen/scratch/ptracker/data/refs_circular_ef/{key}.json"
+    output: 
+        results = "results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    shell: 
+        """
+        cat {input.vamb_bins_minimap} | sed 's/sample_//g' > {input.vamb_bins_minimap}.renamed
+
+        #               Reference, OnlyOrganisms, Bins(which format?), Assembly?
+        ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
+        ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
+        ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
+        ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
+        """
 
 # fast vamb -n 5 -l 2
 # MEDIOID 0.06 now
@@ -219,34 +241,3 @@ rule get_time:
 #         ref = "/maps/projects/rasmussen/scratch/ptracker/data/refs_circular_ef/{key}.json"
 #     output: 
 #         results = "results/{key}/binbencher_results",
-#         # bins_renamed_minimap = "results/{key}/vamb_from_minimap/bins_renamed.txt",
-#         # bins_renamed_strob_def = "results/{key}/vamb_from_strobealign_default_params/bins_renamed.txt",
-#         # bins_renamed_aemb = "results/{key}/vamb_from_strobealign_aemb/bins_renamed.txt",
-#     threads: threads_fn(rulename)
-#     log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-#     benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-#     shell: 
-#         """
-#         cat {input.vamb_bins_minimap} | sed 's/sample_//g' > {input.vamb_bins_minimap}.renamed
-#         cat {input.vamb_bins_strobealign_default} | sed 's/sample_//g' > {input.vamb_bins_strobealign_default}.renamed
-#         cat {input.vamb_bins_aemb} | sed 's/sample_//g' > {input.vamb_bins_aemb}.renamed
-#
-#         #               Reference, OnlyOrganisms, Bins(which format?), Assembly?
-#
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_strobealign_default}.renamed    true          >> {output.results}
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_aemb}.renamed    true          >> {output.results}
-#
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_strobealign_default}.renamed    true          >> {output.results}
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_aemb}.renamed    true          >> {output.results}
-#
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_strobealign_default}.renamed    false          >> {output.results}
-#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_aemb}.renamed    false          >> {output.results}
-#
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_strobealign_default}.renamed    false          >> {output.results}
-#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_aemb}.renamed    false          >> {output.results}
-#         """

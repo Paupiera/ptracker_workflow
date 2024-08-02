@@ -9,3 +9,7 @@ fastp:
 get_time:
   threads: 1 
   mem_gb: 4
+
+binbench_minimap:
+  threads: 1 
+  mem_gb: 10
