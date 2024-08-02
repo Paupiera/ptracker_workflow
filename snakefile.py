@@ -48,9 +48,14 @@ for sample in sample_id.keys():
         print(sample_id_path[sample][id])
     print("-"*20)
 
+rerun_id=[1,2,3]
+medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
+def_radius_id=[0.03, 0.05, 0.07, 0.09]
+
 rule all:
     input: 
-            expand("results/{key}/time_combined.tsv", key=sample_id.keys())
+            expand("results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
+                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id)
         # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
         #        key=sample_id.keys(), rerun_id=[1,2,3], medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1], def_radius_id=[0.03, 0.05, 0.07, 0.09]) 
 # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
@@ -120,9 +125,6 @@ rule Strobealign_bam_default:
 
 
 
-rerun_id=[1,2,3]
-medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-def_radius_id=[0.03, 0.05, 0.07, 0.09]
 
 reruns = 3
 cores_per_vamb = 10
@@ -136,49 +138,41 @@ rule vamb_for_strobealign_default:
             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
             contig = "results/{key}/contigs.flt.fna",
         output:
-            vamb_bins = expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-                               rerun_id=rerun_id,key="{key}", medioid_id="{medioid_id}", def_radius_id="{def_radius_id}")
+            vamb_bins = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
+            vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
         params: 
             dir_name = directory("results/{key}/vamb_runs/vamb_from_strobealign_default_params"),
             cores_per_vamb = cores_per_vamb,
             reruns = reruns,
         threads: cores_total
         # log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{medioid_id}_{def_radius_id}" + rulename
+        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{rerun_id}_{medioid_id}_{def_radius_id}" + rulename
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
         conda: "vamb_changed_v5.0.0"
-
         shell:
             """
-            ~/bxc755/miniconda3/bin/parallel  --will-cite \
-            '\
             export _MEDOID_RADIUS={wildcards.medioid_id}
             export _DEFAULT_RADIUS={wildcards.def_radius_id}
-            rm -rf {params.dir_name}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id}
-            vamb bin default --outdir {params.dir_name}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
-            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}_{{1}}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
-            '\
-            ::: $(seq 1 {params.reruns})  
+            rm -rf {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}
+            vamb bin default --outdir {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
+            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
             """
 
 
 rulename = "get_time"
 rule get_time:
         input: 
-            vamb_bins = expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-                               rerun_id=rerun_id,key="{key}", medioid_id="{medioid_id}", def_radius_id="{def_radius_id}")
+            vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
         output:
-            time = "results/{key}/time_combined/time_combined_{medioid_id}_{def_radius_id}.tsv"
-        params: 
+            time = "results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
+        params:
         threads: cores_total
-        log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         shell:
             """
             # get time for clustering 
-            cat {input.vamb_bins} | grep -E "Clustered contigs in .* seconds." | cut -d " " -f12,13 \
-            | awk '{{print $1, $2, "{wildcards.medioid_id}", "{wildcards.def_radius_id}"}}' > {output.time}
+            cat {input.vamb_log} | grep -E "Clustered contigs in .* seconds." | cut -d " " -f12,13 \
+            | awk '{{print $1, $2, "{wildcards.rerun_id}","{wildcards.medioid_id}", "{wildcards.def_radius_id}"}}' > {output.time}
             """
 
 
