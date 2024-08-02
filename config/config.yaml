@@ -13,3 +13,7 @@ get_time:
 binbench_minimap:
   threads: 1 
   mem_gb: 10
+
+combine_binbench:
+  threads: 1 
+  mem_gb: 10

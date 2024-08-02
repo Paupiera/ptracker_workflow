@@ -2,7 +2,7 @@ all:
 	snakemake -np --snakefile  snakefile.py --rerun-triggers mtime
 	
 runsnakemake:
-	snakemake -p -c4 --snakefile snakefile.py
+	snakemake -p -c4 --snakefile snakefile.py --rerun-triggers mtime
 
 unlockdir:
 	snakemake -p --unlock --snakefile snakefile.py

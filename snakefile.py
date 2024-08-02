@@ -59,148 +59,145 @@ rule all:
                    key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
             expand("results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
                    key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
-<<<<<<< HEAD
-=======
-        # expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-        #        key=sample_id.keys(), rerun_id=[1,2,3], medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1], def_radius_id=[0.03, 0.05, 0.07, 0.09]) 
-# expand("results/{key}/vamb_runs/vamb_from_strobealign_default_params_1/vae_clusters_split.tsv", key=sample_id.keys()),
-# params: a = "2"
-    # shell:
-    #         """
-    #         ~/bxc755/miniconda3/bin/parallel --will-cite --dry-run \
-    #         '\
-    #         echo {{}};
-    #         echo hvamb bin default {params.a} --fasta  \
-    #         -p  --bamfiles  -m 2000 {{}}; 
-    #         '\
-    #         ::: a b 
-    #         """
->>>>>>> 3df0993 (now added binbench supp)
 
-rulename = "Rename_Contigs"
-rule Rename_Contigs:
-        input: 
-            contig = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][2],
-        threads: threads_fn(rulename)
-        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        output:
-            "results/{key}/{value}_renamed_contig.fasta",
-        shell:
-            """
-            cat {input.contig} | sed "/^>/ s/^>NODE/>S{wildcards.value}CNODE/" > {output}
-            """
+# rulename = "Rename_Contigs"
+# rule Rename_Contigs:
+#         input: 
+#             contig = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][2],
+#         threads: threads_fn(rulename)
+#         log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+#         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         output:
+#             "results/{key}/{value}_renamed_contig.fasta",
+#         shell:
+#             """
+#             cat {input.contig} | sed "/^>/ s/^>NODE/>S{wildcards.value}CNODE/" > {output}
+#             """
 
-rulename="cat_contigs"
-rule cat_contigs:
-    input:
-        lambda wildcards: expand("results/{key}/{value}_renamed_contig.fasta", key=wildcards.key, value=sample_id[wildcards.key])
-        # expand_dir("results/[key]/[value]_renamed_contig.fasta", sample_id)
-    output:
-        "results/{key}/contigs.flt.fna"
-    threads: threads_fn(rulename)
-    log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-    conda: "vamb_works2"
-    shell: 
-        """
-        # Needs to use full path for python see snakemake bug: https://github.com/snakemake/snakemake/issues/2861
-        ~/bxc755/miniconda3/envs/vamb_works2/bin/python bin/vamb/src/concatenate.py {output} {input} --keepnames -m 2000 --nozip
-        """
+# rulename="cat_contigs"
+# rule cat_contigs:
+#     input:
+#         lambda wildcards: expand("results/{key}/{value}_renamed_contig.fasta", key=wildcards.key, value=sample_id[wildcards.key])
+#         # expand_dir("results/[key]/[value]_renamed_contig.fasta", sample_id)
+#     output:
+#         "results/{key}/contigs.flt.fna"
+#     threads: threads_fn(rulename)
+#     log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
+#     conda: "vamb_works2"
+#     shell: 
+#         """
+#         # Needs to use full path for python see snakemake bug: https://github.com/snakemake/snakemake/issues/2861
+#         ~/bxc755/miniconda3/envs/vamb_works2/bin/python bin/vamb/src/concatenate.py {output} {input} --keepnames -m 2000 --nozip
+#         """
 
-rulename = "Strobealign_bam_default"
-rule Strobealign_bam_default:
-        input: 
-            fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
-            rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
-            contig = "results/{key}/contigs.flt.fna",
-        output:
-            "results/{key}/strobealign_{value}.sorted.bam"
-        threads: threads_fn(rulename)
-        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        conda: "strobe_env.yaml"
-        shell:
-            """
-            module load samtools
-            strobealign -t {threads} {input.contig} {input.fw} {input.rv} | samtools sort -o {output} 2> {log}
-            """
+# rulename = "Strobealign_bam_default"
+# rule Strobealign_bam_default:
+#         input: 
+#             fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
+#             rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
+#             contig = "results/{key}/contigs.flt.fna",
+#         output:
+#             "results/{key}/strobealign_{value}.sorted.bam"
+#         threads: threads_fn(rulename)
+#         log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+#         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         conda: "strobe_env.yaml"
+#         shell:
+#             """
+#             module load samtools
+#             strobealign -t {threads} {input.contig} {input.fw} {input.rv} | samtools sort -o {output} 2> {log}
+#             """
 
 
 cores_per_vamb = 10
 cores_total = min(127, cores_per_vamb * reruns)
 mem_gb_total = min(1990, int((cores_total/128)*1990))
-print(f"cores_total:", cores_total, "mem_gb_total:", mem_gb_total)
-
-rulename = "vamb_for_strobealign_default"
-rule vamb_for_strobealign_default:
-        input: 
-            bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
-            contig = "results/{key}/contigs.flt.fna",
-        output:
-            vamb_bins = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-            vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
-        params: 
-            dir_name = directory("results/{key}/vamb_runs/vamb_from_strobealign_default_params"),
-            cores_per_vamb = cores_per_vamb,
-            reruns = reruns,
-        threads: cores_total
-        # log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{rerun_id}_{medioid_id}_{def_radius_id}" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
-        conda: "vamb_changed_v5.0.0"
-        shell:
-            """
-            export _MEDOID_RADIUS={wildcards.medioid_id}
-            export _DEFAULT_RADIUS={wildcards.def_radius_id}
-            rm -rf {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}
-            vamb bin default --outdir {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
-            -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
-            """
-
-
-rulename = "get_time"
-rule get_time:
-        input: 
-            vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
-        output:
-            time = "results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
-        params:
-        threads: cores_total
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        shell:
-            """
-            # get time for clustering 
-            cat {input.vamb_log} | grep -E "Clustered contigs in .* seconds." | cut -d " " -f12,13 \
-            | awk '{{print $1, $2, "{wildcards.rerun_id}","{wildcards.medioid_id}", "{wildcards.def_radius_id}"}}' > {output.time}
-            """
+# print(f"cores_total:", cores_total, "mem_gb_total:", mem_gb_total)
+#
+# rulename = "vamb_for_strobealign_default"
+# rule vamb_for_strobealign_default:
+#         input: 
+#             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
+#             contig = "results/{key}/contigs.flt.fna",
+#         output:
+#             vamb_bins = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
+#             vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
+#         params: 
+#             dir_name = directory("results/{key}/vamb_runs/vamb_from_strobealign_default_params"),
+#             cores_per_vamb = cores_per_vamb,
+#             reruns = reruns,
+#         threads: cores_total
+#         # log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
+#         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{rerun_id}_{medioid_id}_{def_radius_id}" + rulename
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
+#         conda: "vamb_changed_v5.0.0"
+#         shell:
+#             """
+#             export _MEDOID_RADIUS={wildcards.medioid_id}
+#             export _DEFAULT_RADIUS={wildcards.def_radius_id}
+#             rm -rf {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}
+#             vamb bin default --outdir {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
+#             -p {params.cores_per_vamb} --bamfiles {input.bamfiles} -m 2000 2> {log}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
+#             """
 
 
-rulename="binbench_minimap"
-rule binbench_minimap:
+# rulename = "get_time"
+# rule get_time:
+#         input: 
+#             vamb_log = "log/{key}_vamb_for_strobealign_default_{rerun_id}_{medioid_id}_{def_radius_id}", 
+#         output:
+#             time = "results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
+#         params:
+#         threads: cores_total
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         shell:
+#             """
+#             # get time for clustering 
+#             cat {input.vamb_log} | grep -E "Clustered contigs in .* seconds." | cut -d " " -f12,13 \
+#             | awk '{{print $1, $2, "{wildcards.rerun_id}","{wildcards.medioid_id}", "{wildcards.def_radius_id}"}}' > {output.time}
+#             """
+
+
+# rulename="binbench_minimap"
+# rule binbench_minimap:
+#     input:
+#         vamb_bins_minimap = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
+#         ref = "/maps/projects/rasmussen/scratch/ptracker/data/refs_circular_ef/{key}.json"
+#     output: 
+#         results = "results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
+#     threads: threads_fn(rulename)
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     shell: 
+#         """
+#         cat {input.vamb_bins_minimap} | sed 's/sample_//g' > {input.vamb_bins_minimap}.renamed
+
+        #               Reference, OnlyOrganisms, Bins(which format?), Assembly?
+#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
+#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
+#         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
+#         ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
+#         """
+
+rulename="combine_binbench"
+rule combine_binbench:
     input:
-        vamb_bins_minimap = "results/{key}/vamb_runs/vamb_from_strobealign_default_params_{rerun_id}_{medioid_id}_{def_radius_id}/vae_clusters_split.tsv", 
-        # vamb_bins_minimap = "results/{key}/vamb_from_minimap/vae_clusters_split.tsv",
-        # vamb_bins_strobealign_default = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
-        # vamb_bins_aemb = "results/{key}/vamb_from_strobealign_aemb/vae_clusters_split.tsv",
-        ref = "/maps/projects/rasmussen/scratch/ptracker/data/refs_circular_ef/{key}.json"
+            binbench = expand("results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
+                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
+            time = expand("results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv",
+                   key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
     output: 
-        results = "results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
+            "results/binbencher_combined"
     threads: threads_fn(rulename)
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     shell: 
         """
-        cat {input.vamb_bins_minimap} | sed 's/sample_//g' > {input.vamb_bins_minimap}.renamed
-
-        #               Reference, OnlyOrganisms, Bins(which format?), Assembly?
-        ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
-        ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
-        ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
-        ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
+        cat {input.binbench} | sed 's_results/__' | sed 's_/_\t_g' | cut -f1,3,5,6,7 | cat {input.time} > {output}
         """
+
 
 # fast vamb -n 5 -l 2
 # MEDIOID 0.06 now
