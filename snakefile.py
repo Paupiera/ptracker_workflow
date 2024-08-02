@@ -56,10 +56,6 @@ def_radius_id=[0.03, 0.05, 0.07, 0.09]
 rule all:
     input: 
             "results/binbencher_combined",
-            # expand("results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
-            #        key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
-            # expand("results/{key}/binbench_results/binbencher_results_{rerun_id}_{medioid_id}_{def_radius_id}.tsv", 
-            #        key=sample_id.keys(), rerun_id=rerun_id, medioid_id=medioid_id, def_radius_id=def_radius_id),
 
 rulename = "Rename_Contigs"
 rule Rename_Contigs:
@@ -114,11 +110,6 @@ rule Strobealign_bam_default:
             """
 
 
-# cores_per_vamb = 10
-# cores_total = min(127, cores_per_vamb * reruns)
-# mem_gb_total = min(1990, int((cores_total/128)*1990))
-# print(f"cores_total:", cores_total, "mem_gb_total:", mem_gb_total)
-
 rulename = "vamb_for_strobealign_default"
 rule vamb_for_strobealign_default:
         input: 
@@ -130,12 +121,9 @@ rule vamb_for_strobealign_default:
         params: 
             dir_name = directory("results/{key}/vamb_runs/vamb_from_strobealign_default_params"),
             reruns = reruns,
-        # log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{rerun_id}_{medioid_id}_{def_radius_id}" + rulename
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         threads: threads_fn(rulename)
-        # threads: cores_total
-        # resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_total
         conda: "vamb_changed_v5.0.0"
         shell:
             """
@@ -154,7 +142,6 @@ rule get_time:
         output:
             time = "results/{key}/time_combined/time_combined_{rerun_id}_{medioid_id}_{def_radius_id}.tsv"
         params:
-        # threads: cores_total
         threads: threads_fn(rulename)
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         shell:
@@ -206,46 +193,3 @@ rule combine_binbench:
             ::: {input.binbench} :::+ {input.time}
             """
 
-
-# fast vamb -n 5 -l 2
-# MEDIOID 0.06 now
-# ::: 0.05 0.06 0.07 0.08 0.09 0.1
-# DEFAULT_RADIUS  0.05 
-# ::: 0.03 0.05 0.07 0.09 
-
-# ::: $(seq 1 {params.reruns})  
-# TODO remove -e 10
-
-            # rm -rf {output.dir}_{{}};
-
-# rulename = "vamb_for_strobealign_default"
-# rule vamb_for_strobealign_default:
-#         input: 
-#             # bamfiles = expand_dir("results/[key]/strobealign_[value].sorted.bam", sample_id),
-#             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
-#             contig = "results/{key}/contigs.flt.fna",
-#         output:
-#             dir = directory("results/{key}/vamb_from_strobealign_default_params"),
-#             vamb_bins = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
-#         threads: threads_fn(rulename)
-#         log: return_none_or_default(config, "log", "log/")+"{key}_" + rulename
-#         benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_" + rulename
-#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-#         conda: "vamb_works2"
-#         shell:
-#             """
-#             rm -rf {output.dir} 
-#             vamb bin default --outdir {output.dir} --fasta {input.contig} \
-#             -p {threads} --bamfiles {input.bamfiles} -m 2000 
-#             """
-# print(expand("out.{a}", a = [1,2,3]))
-
-# rulename="binbench_minimap"
-# rule binbench_minimap:
-#     input:
-#         vamb_bins_minimap = "results/{key}/vamb_from_minimap/vae_clusters_split.tsv",
-#         vamb_bins_strobealign_default = "results/{key}/vamb_from_strobealign_default_params/vae_clusters_split.tsv",
-#         vamb_bins_aemb = "results/{key}/vamb_from_strobealign_aemb/vae_clusters_split.tsv",
-#         ref = "/maps/projects/rasmussen/scratch/ptracker/data/refs_circular_ef/{key}.json"
-#     output: 
-#         results = "results/{key}/binbencher_results",
