@@ -1,5 +1,7 @@
+SHELL:=/bin/bash
+
 all:
-	snakemake -np --snakefile  snakefile.py  --rerun-incomplete
+	snakemake -np --snakefile  snakefile.py  --rerun-incomplete 
 	
 runsnakemake:
 	snakemake -p -c4 --snakefile snakefile.py --rerun-triggers mtime
@@ -8,7 +10,7 @@ unlockdir:
 	snakemake -p --unlock --snakefile snakefile.py
 
 clustersubmit:
-	rm -rf results/Airways/vamb_from_strobealign_default_params_1
+	# rm -rf results/Airways/vamb_from_strobealign_default_params_1
 	mkdir -p snakemake_output
 	rm snakemake_output/snakemake_workflow.e
 	touch snakemake_output/snakemake_workflow.e
@@ -23,6 +25,7 @@ view:
 
 scancel:
 	squeue  --me | grep -v NODELIST | fzf -m --bind ctrl-a:select-all,ctrl-d:deselect-all,ctrl-t:toggle-all | awk '{print $$1}' | xargs scancel
+
 
 
 

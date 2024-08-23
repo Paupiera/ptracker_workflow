@@ -48,10 +48,14 @@ for sample in sample_id.keys():
         print(sample_id_path[sample][id])
     print("-"*20)
 
-reruns = 3
+# reruns = 3
+# rerun_id=list(range(1,reruns+1))
+# medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
+# def_radius_id=[0.03, 0.05, 0.07, 0.09]
+reruns = 2
 rerun_id=list(range(1,reruns+1))
-medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-def_radius_id=[0.03, 0.05, 0.07, 0.09]
+medioid_id = [0.05]
+def_radius_id=[0.03]
 
 rule all:
     input: 
@@ -131,7 +135,8 @@ rule vamb_for_strobealign_default:
             export _DEFAULT_RADIUS={wildcards.def_radius_id}
             rm -rf {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}
             vamb bin default --outdir {params.dir_name}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id}  --fasta {input.contig} \
-            -p {threads} --bamfiles {input.bamfiles} -m 2000 2> {log}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
+            -p {threads} --bamfiles {input.bamfiles} -m 2000 2> {output.vamb_log} ; 
+            # -p {threads} --bamfiles {input.bamfiles} -m 2000 2> {log}_{wildcards.rerun_id}_{wildcards.medioid_id}_{wildcards.def_radius_id} ; 
             """
 
 

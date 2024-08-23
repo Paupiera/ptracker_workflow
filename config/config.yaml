@@ -19,5 +19,5 @@ combine_binbench:
   mem_gb: 10
 
 vamb_for_strobealign_default:
-  threads: 10 
+  threads: 40 
   mem_gb: 100
