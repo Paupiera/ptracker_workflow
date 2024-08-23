@@ -71,3 +71,37 @@ Default k-mer sizes were set to [21, 33, 55, 77, 99, 127] because estimated read
   0:00:00.053     1M / 12M   INFO    General                 (kmer_splitter.hpp         : 102)   Using cell size of 4194304
   0:00:00.098  9217M / 9217M INFO   K-mer Splitting          (kmer_data.cpp             :  98)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1.qc.fastq.gz"
   0:00:42.513  9217M / 14G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 3425305 reads
+  0:01:29.140  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 7017477 reads
+  0:02:17.636  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 10577141 reads
+  0:03:05.569  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 14013451 reads
+  0:03:38.532  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 17387095 reads
+  0:04:09.601  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 20520024 reads
+  0:04:27.507  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 21959625 reads
+  0:04:27.508  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             :  98)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_2.qc.fastq.gz"
+  0:04:56.094  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 24951345 reads
+  0:05:27.119  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 28318273 reads
+  0:06:03.293  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 31974136 reads
+  0:06:36.658  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 35352808 reads
+  0:08:02.927  9217M / 15G   INFO   K-mer Splitting          (kmer_data.cpp             : 113)   Total 43919250 reads processed
+  0:08:02.948     1M / 15G   INFO    General                 (kmer_index_builder.hpp    : 264)   Starting k-mer counting.
+  0:10:08.940     1M / 62G   INFO    General                 (kmer_index_builder.hpp    : 275)   K-mer counting done. There are 4255416382 kmers in total.
+  0:10:08.944     1M / 62G   INFO   K-mer Index Building     (kmer_index_builder.hpp    : 410)   Building perfect hash indices
+  0:13:44.192  2974M / 62G   INFO   K-mer Index Building     (kmer_index_builder.hpp    : 446)   Index built. Total 4255416382 kmers, 3073546848 bytes occupied (5.77814 bits per kmer).
+  0:13:44.192  2974M / 62G   INFO   K-mer Counting           (kmer_data.cpp             : 355)   Arranging kmers in hash map order
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (34049359872 bytes, address: 0x7fdfbb80b000, alignment: 67108864, commit: 1)
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (34049359872 bytes, address: 0x7fd7ca800000, alignment: 67108864, commit: 1)
+  0:15:01.759    67G / 67G   INFO    General                 (main.cpp                  : 149)   Clustering Hamming graph.
+  1:05:20.871    67G / 67G   INFO    General                 (main.cpp                  : 156)   Extracting clusters:
+  1:05:20.871    67G / 67G   INFO    General                 (concurrent_dsu.cpp        :  19)   Connecting to root
+  1:05:26.900    67G / 67G   INFO    General                 (concurrent_dsu.cpp        :  35)   Calculating counts
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (73018638336 bytes, address: 0x7fc6c7c00000, alignment: 67108864, commit: 1)
+  1:15:55.906   135G / 135G  INFO    General                 (concurrent_dsu.cpp        :  64)   Writing down entries
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (34049359872 bytes, address: 0x7fbed6800000, alignment: 67108864, commit: 1)
+  1:31:59.501    67G / 187G  INFO    General                 (main.cpp                  : 168)   Clustering done. Total clusters: 2695493674
+  1:31:59.585    35G / 187G  INFO   K-mer Counting           (kmer_data.cpp             : 372)   Collecting K-mer information, this takes a while.
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (102135496704 bytes, address: 0x7fc7f0400000, alignment: 67108864, commit: 1)
+  1:32:17.425   130G / 187G  INFO   K-mer Counting           (kmer_data.cpp             : 378)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_1.qc.fastq.gz"
+  1:36:08.204   130G / 187G  INFO   K-mer Counting           (kmer_data.cpp             : 378)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-06_S0_L001_2.qc.fastq.gz"
+  1:39:53.501   130G / 187G  INFO   K-mer Counting           (kmer_data.cpp             : 385)   Collection done, postprocessing.
+  1:40:04.331   130G / 187G  INFO   K-mer Counting           (kmer_data.cpp             : 398)   There are 4255416382 kmers in total. Among them 2574887774 (60.5085%) are singletons.
+  1:40:04.331   130G / 187G  INFO    General                 (main.cpp                  : 174)   Subclustering Hamming graph

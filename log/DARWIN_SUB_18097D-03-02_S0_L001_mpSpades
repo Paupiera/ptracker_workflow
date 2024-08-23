@@ -1,0 +1,106 @@
+Command line: /maps/projects/rasmussen/scratch/ptracker/run_mp_spades/bin/SPades-4/SPAdes-4.0.0-Linux/bin/metaplasmidspades.py	--phred-offset	33	-o	/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001	-1	/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz	-2	/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz	
+
+System information:
+  SPAdes version: 4.0.0
+  Python version: 3.9.0
+  OS: Linux-4.18.0-553.16.1.el8_10.x86_64-x86_64-with-glibc2.28
+
+Output dir: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001
+Mode: read error correction and assembling
+Debug mode is turned OFF
+
+Dataset parameters:
+  Metagenomic mode
+  Reads:
+    Library number: 1, library type: paired-end
+      orientation: fr
+      left reads: ['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz']
+      right reads: ['/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz']
+      interlaced reads: not specified
+      single reads: not specified
+      merged reads: not specified
+Read error correction parameters:
+  Iterations: 1
+  PHRED offset: 33
+  Corrected reads will be compressed
+Assembly parameters:
+  k: automatic selection based on read length
+  Extrachromosomal mode is turned ON
+  Repeat resolution is enabled
+  Mismatch careful mode is turned OFF
+  MismatchCorrector will be SKIPPED
+  Coverage cutoff is turned OFF
+  Assembly graph output will use GFA v1.2 format
+Other parameters:
+  Dir for temp files: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001/tmp
+  Threads: 16
+  Memory limit (in Gb): 250
+
+
+======= SPAdes pipeline started. Log can be found here: /maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001/spades.log
+
+/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz: max reads length: 150
+/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz: max reads length: 150
+
+Reads length: 150
+
+Default k-mer sizes were set to [21, 33, 55, 77, 99, 127] because estimated read length (150) is equal to or greater than 150
+
+===== Before start started. 
+
+
+===== Read error correction started. 
+
+
+===== Read error correction started. 
+
+
+== Running: /maps/projects/rasmussen/scratch/ptracker/run_mp_spades/bin/SPades-4/SPAdes-4.0.0-Linux/bin/spades-hammer /maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001/corrected/configs/config.info
+
+  0:00:00.000     1M / 12M   INFO    General                 (main.cpp                  :  76)   Starting BayesHammer, built from N/A, git revision 38af83de44403f833a32073fd47ba469d998efd1
+  0:00:00.025     1M / 12M   INFO    General                 (main.cpp                  :  77)   Loading config from "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/mp_spades_18097D-03-02_S0_L001/corrected/configs/config.info"
+  0:00:00.047     1M / 12M   INFO    General                 (main.cpp                  :  79)   Maximum # of threads to use (adjusted due to OMP capabilities): 16
+  0:00:00.057     1M / 12M   INFO    General                 (memory_limit.cpp          :  55)   Memory limit set to 250 Gb
+  0:00:00.058     1M / 12M   INFO    General                 (hammer_tools.cpp          :  40)   Hamming graph threshold tau=1, k=21, subkmer positions = [ 0 10 ]
+  0:00:00.059     1M / 12M   INFO    General                 (main.cpp                  : 114)   Size of aux. kmer data 24 bytes
+     === ITERATION 0 begins ===
+  0:00:00.059     1M / 12M   INFO   K-mer Counting           (kmer_data.cpp             : 284)   Estimating k-mer count
+  0:00:00.091   257M / 277M  INFO   K-mer Counting           (kmer_data.cpp             : 289)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz"
+  0:01:29.622   257M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 298)   Processed 24310488 reads
+  0:01:29.622   257M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 289)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz"
+  0:02:59.472   257M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 298)   Processed 48620976 reads
+  0:02:59.473   257M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 303)   Total 48620976 reads processed
+  0:02:59.918   257M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 306)   Estimated 5223186077 distinct kmers
+  0:02:59.918     1M / 279M  INFO   K-mer Counting           (kmer_data.cpp             : 310)   Filtering singleton k-mers
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (21751660544 bytes, address: 0x7f5104079000, alignment: 67108864, commit: 1)
+  0:03:01.919    21G / 21G   INFO   K-mer Counting           (kmer_data.cpp             : 316)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz"
+  0:51:20.160    21G / 21G   INFO   K-mer Counting           (kmer_data.cpp             : 325)   Processed 24310488 reads
+  0:51:20.160    21G / 21G   INFO   K-mer Counting           (kmer_data.cpp             : 316)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz"
+  1:19:09.942    21G / 21G   INFO   K-mer Counting           (kmer_data.cpp             : 325)   Processed 48620976 reads
+  1:19:09.942    21G / 21G   INFO   K-mer Counting           (kmer_data.cpp             : 330)   Total 48620976 reads processed
+  1:19:09.950    21G / 21G   INFO    General                 (kmer_index_builder.hpp    : 258)   Splitting kmer instances into 16 files using 16 threads. This might take a while.
+  1:19:09.952    21G / 21G   INFO    General                 (file_limit.hpp            :  43)   Open file limit set to 1024
+  1:19:09.952    21G / 21G   INFO    General                 (kmer_splitter.hpp         :  94)   Memory available for splitting buffers: 4.78603 Gb
+  1:19:09.952    21G / 21G   INFO    General                 (kmer_splitter.hpp         : 102)   Using cell size of 4194304
+  1:19:09.990    30G / 30G   INFO   K-mer Splitting          (kmer_data.cpp             :  98)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_1.qc.fastq.gz"
+  1:19:58.943    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 4562328 reads
+  1:20:46.147    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 9031281 reads
+  1:21:36.274    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 13771560 reads
+  1:22:23.035    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 18570568 reads
+  1:23:07.717    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 23415403 reads
+  1:23:17.376    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 24310488 reads
+  1:23:17.376    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             :  98)   Processing "/maps/projects/rasmussen/scratch/ptracker/ptracker/data/sample_DARWIN_SUB/reads_fastp/18097D-03-02_S0_L001_2.qc.fastq.gz"
+  1:23:48.535    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 28791366 reads
+  1:24:21.270    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 33195340 reads
+  1:24:58.034    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 37736624 reads
+  1:25:36.274    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 42558227 reads
+  1:26:13.109    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 108)   Processed 47282309 reads
+  1:26:26.872    30G / 35G   INFO   K-mer Splitting          (kmer_data.cpp             : 113)   Total 48620976 reads processed
+  1:26:26.890    21G / 35G   INFO    General                 (kmer_index_builder.hpp    : 264)   Starting k-mer counting.
+  1:27:14.704    21G / 63G   INFO    General                 (kmer_index_builder.hpp    : 275)   K-mer counting done. There are 1821496250 kmers in total.
+  1:27:14.749    18M / 63G   INFO   K-mer Index Building     (kmer_index_builder.hpp    : 410)   Building perfect hash indices
+  1:28:25.108  1322M / 63G   INFO   K-mer Index Building     (kmer_index_builder.hpp    : 446)   Index built. Total 1821496250 kmers, 1315613392 bytes occupied (5.77817 bits per kmer).
+  1:28:25.108  1322M / 63G   INFO   K-mer Counting           (kmer_data.cpp             : 355)   Arranging kmers in hash map order
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (14579400704 bytes, address: 0x7f52af879000, alignment: 67108864, commit: 1)
+mimalloc: warning: unable to allocate aligned OS memory directly, fall back to over-allocation (14579400704 bytes, address: 0x7f4f47000000, alignment: 67108864, commit: 1)
+  1:28:59.200    29G / 63G   INFO    General                 (main.cpp                  : 149)   Clustering Hamming graph.
