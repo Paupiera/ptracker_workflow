@@ -1,5 +1,5 @@
 
-files: "./config/accessions.txt"
+files: "./config/mini_accessions.txt"
 
 fastp: 
   walltime: "10-00:00:00"

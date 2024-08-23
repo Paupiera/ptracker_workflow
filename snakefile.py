@@ -48,10 +48,6 @@ for sample in sample_id.keys():
         print(sample_id_path[sample][id])
     print("-"*20)
 
-# reruns = 3
-# rerun_id=list(range(1,reruns+1))
-# medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-# def_radius_id=[0.03, 0.05, 0.07, 0.09]
 reruns = 2
 rerun_id=list(range(1,reruns+1))
 medioid_id = [0.05]
@@ -59,7 +55,49 @@ def_radius_id=[0.03]
 
 rule all:
     input: 
-            "results/binbencher_combined",
+            'a',
+            'b',
+            # "results/binbencher_combined",
+
+
+rulename = "coverm"
+rule coverm:
+        input: 
+            fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
+            rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
+            contig = "results/{key}/contigs.flt.fna",
+        output:
+            "a"
+        #     "results/{key}/strobealign_{value}.sorted.bam"
+        threads: threads_fn(rulename)
+        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        conda: "strobe_env.yaml"
+        shell:
+            """
+            coverm
+            """
+
+rulename = "msamtools"
+rule msamtools:
+        input: 
+            fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
+            rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
+            contig = "results/{key}/contigs.flt.fna",
+        output:
+            "b"
+        #     "results/{key}/strobealign_{value}.sorted.bam"
+        threads: threads_fn(rulename)
+        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        conda: "strobe_env.yaml"
+        shell:
+            """
+            msamtools
+            """
+
 
 rulename = "Rename_Contigs"
 rule Rename_Contigs:
@@ -93,6 +131,7 @@ rule cat_contigs:
         # Needs to use full path for python see snakemake bug: https://github.com/snakemake/snakemake/issues/2861
         ~/bxc755/miniconda3/envs/vamb_works2/bin/python bin/vamb/src/concatenate.py {output} {input} --keepnames -m 2000 --nozip
         """
+
 
 rulename = "Strobealign_bam_default"
 rule Strobealign_bam_default:

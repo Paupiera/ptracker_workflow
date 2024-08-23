@@ -4,7 +4,7 @@ all:
 	snakemake -np --snakefile  snakefile.py  --rerun-incomplete 
 	
 runsnakemake:
-	snakemake -p -c4 --snakefile snakefile.py --rerun-triggers mtime
+	snakemake -p -c4 --snakefile snakefile.py --keep-incomplete
 
 unlockdir:
 	snakemake -p --unlock --snakefile snakefile.py
