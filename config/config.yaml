@@ -11,9 +11,9 @@ spades:
   mem_gb: 245
 
 SCAPP: 
-  walltime: "15-00:00:00"
-  threads: 16 
-  mem_gb: 150
+  walltime: "45-00:00:00"
+  threads: 63 
+  mem_gb: 990
 
 index:
   threads: 8 

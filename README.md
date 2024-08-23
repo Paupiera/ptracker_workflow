@@ -1,3 +1,9 @@
+
+TODO:
+vamb_default er fra ptracekr git 
+
+
+
 conda envs er funky -- suprise
 try with module snakemake -- in the future all conda should be called through snakemake, 
 and snakemake can then be it's own env

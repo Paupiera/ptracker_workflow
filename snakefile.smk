@@ -83,7 +83,9 @@ except FileExistsError:
 
 rule all:
     input:
-        # expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),key=sample_id.keys()),
+        expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
@@ -515,6 +517,7 @@ rule SCAPP:
         graph = "data/sample_{key}/spades_{id}/assembly_graph.fastg",
         fw = read_fw_after_fastp, 
         rv = read_rv_after_fastp, 
+        # graph_align = "data/sample_{key}/old_scapp/scapp_{id}/assembly_graph.confident_cycs.fasta/intermediate_files/reads_pe_primary.sort.bam", 
     output:
         # scapp makes a directory first and the changes it to a file which is the output. This confuses
         # snakemakes due it either looking for a directory or a file and then stopping the job
@@ -529,6 +532,30 @@ rule SCAPP:
     conda: "install_scapp.yaml"
     shell:
         """
-        "scapp -g {input.graph} -o {params.true_output} -r1 {input.fw} -r2 {input.rv} -p {threads};"
-        "touch {output.fake_output}"
+        scapp -g {input.graph} -o {params.true_output} -r1 {input.fw} -r2 {input.rv} -p {threads}
+        touch {output.fake_output}
         """
+# Expected output file
+# fd assembly_graph.confident_cycs.fasta -t f
+# scapp_13/assembly_graph.confident_cycs.fasta/assembly_graph.confident_cycs.fasta
+
+
+#rulename = "mpSpades"
+#rule mpSpades:
+#        input: 
+#            fw = read_fw_after_fastp, 
+#            rv = read_rv_after_fastp, 
+#        output:
+#            outdir = directory("data/sample_{key}/mp_spades_{id}"),
+#            outfile = "results/sample_{key}/mp_spades_{id}/contigs.fasta",
+#        threads: threads_fn(rulename)
+#        benchmark: "benchmark/{key}_spades_{id}"
+#        log: return_none_or_default(config, "log", "log/")+"{key}_{id}_" + rulename
+#        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#        shell:
+#            """
+#            rm -rf {output.outdir}
+#            /maps/projects/rasmussen/scratch/ptracker/run_mp_spades/bin/SPades-4/SPAdes-4.0.0-Linux/bin/plasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
+#            > {log}
+#            ## bin/SPAdes-3.15.4-Linux/bin/metaplasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
+#            """
