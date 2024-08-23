@@ -83,12 +83,13 @@ except FileExistsError:
 
 rule all:
     input:
-        expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
-        expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),key=sample_id.keys()),
-        expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
+        #expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        #expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),key=sample_id.keys()),
+        #expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
-        expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
+        # expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
+        expand_dir("results/sample_[key]/mp_spades_[value]/contigs.fasta", sample_id),
 
 rulename = "fastp"
 rule fastp:
@@ -540,22 +541,22 @@ rule SCAPP:
 # scapp_13/assembly_graph.confident_cycs.fasta/assembly_graph.confident_cycs.fasta
 
 
-#rulename = "mpSpades"
-#rule mpSpades:
-#        input: 
-#            fw = read_fw_after_fastp, 
-#            rv = read_rv_after_fastp, 
-#        output:
-#            outdir = directory("data/sample_{key}/mp_spades_{id}"),
-#            outfile = "results/sample_{key}/mp_spades_{id}/contigs.fasta",
-#        threads: threads_fn(rulename)
-#        benchmark: "benchmark/{key}_spades_{id}"
-#        log: return_none_or_default(config, "log", "log/")+"{key}_{id}_" + rulename
-#        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-#        shell:
-#            """
-#            rm -rf {output.outdir}
-#            /maps/projects/rasmussen/scratch/ptracker/run_mp_spades/bin/SPades-4/SPAdes-4.0.0-Linux/bin/plasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
-#            > {log}
-#            ## bin/SPAdes-3.15.4-Linux/bin/metaplasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
-#            """
+rulename = "mpSpades"
+rule mpSpades:
+        input: 
+            fw = read_fw_after_fastp, 
+            rv = read_rv_after_fastp, 
+        output:
+            outdir = directory("data/sample_{key}/mp_spades_{id}"),
+            outfile = "results/sample_{key}/mp_spades_{id}/contigs.fasta",
+        threads: threads_fn(rulename)
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+        log: config.get("log", "log/") + "{key}_{id}_" + rulename
+        shell:
+            """
+            rm -rf {output.outdir}
+            /maps/projects/rasmussen/scratch/ptracker/run_mp_spades/bin/SPades-4/SPAdes-4.0.0-Linux/bin/plasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
+            > {log}
+            ## bin/SPAdes-3.15.4-Linux/bin/metaplasmidspades.py --phred-offset 33 -o {output.outdir} -1 {input.fw} -2 {input.rv} \
+            """
