@@ -19,7 +19,7 @@
 
 # Just added use-conda..  and base path remove if not works and run scapp alone
 
-snakemake --nolock --conda-base-path ~/bxc755/miniconda3 --use-conda --rerun-incomplete -p --snakefile snakefile.py --keep-incomplete --use-conda --rerun-triggers mtime \
+snakemake --rerun-triggers mtime --nolock --conda-base-path ~/bxc755/miniconda3 --use-conda --rerun-incomplete -p --snakefile snakefile.py --keep-incomplete --use-conda --rerun-triggers mtime \
   --jobs 2 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
   --cluster "sbatch  --output=snakemake_output/{rule}.%j.o --error=snakemake_output/{rule}.%j.e --time={resources.walltime} --job-name {rule}  --cpus-per-task {threads} --mem {resources.mem_gb}G "
 &>snakemake_output/snakemake.oe

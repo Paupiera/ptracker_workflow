@@ -1,7 +1,12 @@
 SHELL:=/bin/bash
 
 all:
-	snakemake -np --snakefile  snakefile.py  --rerun-incomplete 
+	echo "make sure conda env is deactivated"
+	module load snakemake/7.30.1 
+	snakemake -np --snakefile  snakefile.py  --rerun-incomplete --rerun-triggers mtime
+
+listenvs:
+	snakemake --snakefile snakefile.py -np --list-conda-envs   
 	
 runsnakemake:
 	module purge 

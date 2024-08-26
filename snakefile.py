@@ -55,7 +55,8 @@ def_radius_id=[0.03]
 
 rule all:
     input: 
-            expand("results/{key}/msamtools", key=sample_id.keys())
+            expand("results/{key}/filtered.bam", key=sample_id.keys())
+            # expand("results/{key}/msamtools.txt.gz", key=sample_id.keys())
 
 
 rulename = "coverm"
@@ -78,20 +79,35 @@ rule coverm:
                 95 --min-read-aligned-percent 80
             """
 
+# rulename = "msamtools"
+# rule msamtools:
+#         input: 
+#             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
+#         output:
+#             "results/{key}/msamtools.txt.gz",
+#         conda: "envs/msamtools.yaml"
+#         threads: threads_fn(rulename)
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         envmodules: "samtools/1.20"
+#         shell:
+#             """
+#                 samtools view {input.bamfiles} \
+#                     | msamtools filter -S -bu -l 80 -p 95 -z 80 --besthit - \
+#                     | msamtools profile --multi=proportional --label=SAMPLE --unit=ab -o SAMPLE.profile.txt.gz -
+#             """
+
 rulename = "msamtools"
 rule msamtools:
         input: 
             bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
         output:
-            "results/{key}/msamtools",
+            "results/{key}/filtered.bam",
         conda: "envs/msamtools.yaml"
         threads: threads_fn(rulename)
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         shell:
             """
-                samtools view {input.bamfiles} \
-                    | msamtools filter -S -bu -l 80 -p 95 -z 80 --besthit - \
-                    | msamtools profile --multi=proportional --label=SAMPLE --unit=ab -o SAMPLE.profile.txt.gz -
+            msamtools filter {input.bamfiles} -bu -l 80 -p 95 -z 80 --besthit > {output}
             """
 
 
