@@ -4,7 +4,9 @@ all:
 	snakemake -np --snakefile  snakefile.py  --rerun-incomplete 
 	
 runsnakemake:
-	snakemake -p -c4 --snakefile snakefile.py --keep-incomplete
+	module purge 
+	module load snakemake/7.30.1
+	snakemake -p -c4 --snakefile snakefile.py --keep-incomplete --use-conda 
 
 unlockdir:
 	snakemake -p --unlock --snakefile snakefile.py
@@ -12,6 +14,7 @@ unlockdir:
 clustersubmit:
 	# rm -rf results/Airways/vamb_from_strobealign_default_params_1
 	mkdir -p snakemake_output
+	touch snakemake_output/snakemake_workflow.e
 	rm snakemake_output/snakemake_workflow.e
 	touch snakemake_output/snakemake_workflow.e
 	sbatch clustersubmit.sh

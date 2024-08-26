@@ -20,8 +20,8 @@ def return_none_or_default(dic, key, default_value):
     return dic[key]
 
 
-default_walltime = "48:00:00"
-default_threads = 10
+default_walltime = "01:00:00"
+default_threads = 60
 default_mem_gb = 100 
 
 threads_fn = lambda rulename: return_none_or_default(config.get(rulename), "threads", default_threads) 
@@ -55,9 +55,7 @@ def_radius_id=[0.03]
 
 rule all:
     input: 
-            'a',
-            'b',
-            # "results/binbencher_combined",
+            expand("results/{key}/msamtools", key=sample_id.keys())
 
 
 rulename = "coverm"
@@ -65,37 +63,35 @@ rule coverm:
         input: 
             fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
             rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
-            contig = "results/{key}/contigs.flt.fna",
         output:
             "a"
         #     "results/{key}/strobealign_{value}.sorted.bam"
-        threads: threads_fn(rulename)
-        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        conda: "strobe_env.yaml"
+        # threads: threads_fn(rulename)
+        # log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+        # benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+        # resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        conda: "envs/coverm.yaml"
         shell:
             """
-            coverm
+            # coverm
+            coverm contig --min-read-aligned-length 80 --min-read-percent-identity \
+                95 --min-read-aligned-percent 80
             """
 
 rulename = "msamtools"
 rule msamtools:
         input: 
-            fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
-            rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
-            contig = "results/{key}/contigs.flt.fna",
+            bamfiles = lambda wildcards: expand("results/{key}/strobealign_{value}.sorted.bam", key=wildcards.key, value=sample_id[wildcards.key]),
         output:
-            "b"
-        #     "results/{key}/strobealign_{value}.sorted.bam"
+            "results/{key}/msamtools",
+        conda: "envs/msamtools.yaml"
         threads: threads_fn(rulename)
-        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
-        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        conda: "strobe_env.yaml"
         shell:
             """
-            msamtools
+                samtools view {input.bamfiles} \
+                    | msamtools filter -S -bu -l 80 -p 95 -z 80 --besthit - \
+                    | msamtools profile --multi=proportional --label=SAMPLE --unit=ab -o SAMPLE.profile.txt.gz -
             """
 
 

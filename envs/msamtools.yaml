@@ -1,5 +1,7 @@
 name: msamtools
 channels:
 - bioconda
+- default
+- conda-forge
 dependencies:
 - msamtools
