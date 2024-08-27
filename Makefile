@@ -1,7 +1,7 @@
 SFILE = snakefile.smk
 
 all:
-	snakemake -np --snakefile  $(SFILE)  --rerun-incomplete 
+	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime
 	
 runsnakemake:
 	snakemake -p -c4 --snakefile $(SFILE) --rerun-triggers mtime

@@ -89,7 +89,7 @@ rule all:
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
-        expand_dir("results/sample_[key]/mp_spades_[value]/contigs.fasta", sample_id),
+        expand_dir("data/sample_[key]/mp_spades_[value]/contigs.fasta", sample_id),
 
 rulename = "fastp"
 rule fastp:
@@ -548,7 +548,7 @@ rule mpSpades:
             rv = read_rv_after_fastp, 
         output:
             outdir = directory("data/sample_{key}/mp_spades_{id}"),
-            outfile = "results/sample_{key}/mp_spades_{id}/contigs.fasta",
+            outfile = "data/sample_{key}/mp_spades_{id}/contigs.fasta",
         threads: threads_fn(rulename)
         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
         benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
