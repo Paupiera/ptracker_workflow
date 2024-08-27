@@ -23,6 +23,6 @@ module purge
 module load snakemake/7.30.1
 
 snakemake --nolock --use-conda -p --rerun-triggers mtime --snakefile snakefile.smk --conda-base-path ~/bxc755/miniconda3 --use-conda \
-  --jobs 1 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
+  --jobs 5 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
   --cluster "sbatch  --output=snakemake_output/{rule}.%j.o --error=snakemake_output/{rule}.%j.e --time={resources.walltime} --job-name {rule}  --cpus-per-task {threads} --mem {resources.mem_gb}G "
 &>snakemake_output/snakemake.oe

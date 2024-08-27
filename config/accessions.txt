@@ -1,9 +1,7 @@
 SAMPLE ID READ1 READ2
 DARWIN_SUB 18097D-03-02_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-02_S0_L001_2.fastq.gz
-#DARWIN_SUB 18097D-03-07_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-07_S0_L001_2.fastq.gz
-#DARWIN_SUB 18097D-03-11_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz
-#DARWIN_SUB 18097D-03-12_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-12_S0_L001_2.fastq.gz
-#DARWIN_SUB 18097D-03-06_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-11_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-11_S0_L001_2.fastq.gz
+DARWIN_SUB 18097D-03-06_S0_L001      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_1.fastq.gz      /maps/projects/rasmussen/scratch/ptracker/ptracker/data/reads/data/18097D-03-06_S0_L001_2.fastq.gz
 
 
 
