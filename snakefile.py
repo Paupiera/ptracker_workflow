@@ -48,14 +48,14 @@ for sample in sample_id.keys():
         print(sample_id_path[sample][id])
     print("-"*20)
 
-# reruns = 3
-# rerun_id=list(range(1,reruns+1))
-# medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
-# def_radius_id=[0.03, 0.05, 0.07, 0.09]
-reruns = 2
+reruns = 3
 rerun_id=list(range(1,reruns+1))
-medioid_id = [0.05]
-def_radius_id=[0.03]
+medioid_id = [0.05, 0.06, 0.07, 0.08, 0.09, 0.1]
+def_radius_id=[0.03, 0.05, 0.07, 0.09]
+# reruns = 2
+# rerun_id=list(range(1,reruns+1))
+# medioid_id = [0.05]
+# def_radius_id=[0.03]
 
 rule all:
     input: 
@@ -170,7 +170,7 @@ rule binbench_minimap:
         """
         cat {input.vamb_bins_minimap} | sed 's/sample_//g' > {input.vamb_bins_minimap}.renamed
 
-                      Reference, OnlyOrganisms, Bins(which format?), Assembly?
+        #              Reference, OnlyOrganisms, Bins(which format?), Assembly?
         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
         ./Binbench.jl {input.ref}  false          {input.vamb_bins_minimap}.renamed    true          >> {output.results}
         ./Binbench.jl {input.ref}  true          {input.vamb_bins_minimap}.renamed    false          >> {output.results}
@@ -195,6 +195,6 @@ rule combine_binbench:
             cat {{2}} {{2}} {{2}} {{2}}  | \
               paste {{1}} -
             '\
-            ::: {input.binbench} :::+ {input.time}
+            ::: {input.binbench} :::+ {input.time}  > {output}
             """
 

@@ -1,16 +1,16 @@
 SHELL:=/bin/bash
+SFILE = snakefile.smk
 
 all:
-	snakemake -np --snakefile  snakefile.py  --rerun-incomplete 
+	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime
 	
 runsnakemake:
-	snakemake -p -c4 --snakefile snakefile.py --rerun-triggers mtime
+	snakemake -p -c4 --snakefile $(SFILE) --rerun-triggers mtime
 
 unlockdir:
-	snakemake -p --unlock --snakefile snakefile.py
+	snakemake -p --unlock --snakefile $(SFILE)
 
 clustersubmit:
-	# rm -rf results/Airways/vamb_from_strobealign_default_params_1
 	mkdir -p snakemake_output
 	rm snakemake_output/snakemake_workflow.e
 	touch snakemake_output/snakemake_workflow.e
