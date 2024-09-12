@@ -1,4 +1,5 @@
 /log/
+temp_data/
 /results/
 /snakemake_output/
 /genomad_db/
@@ -20,3 +21,6 @@ core.*
 /Urogenital/
 snakejob*
 /bin/
+msamtoolsabund.txt
+msamtoolsabund.npz
+SAMPLE.profile.txt.gz

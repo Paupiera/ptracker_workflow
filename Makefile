@@ -6,12 +6,15 @@ all:
 	snakemake -np --snakefile  snakefile.py  --rerun-incomplete --rerun-triggers mtime
 
 listenvs:
-	snakemake --snakefile snakefile.py -np --list-conda-envs   
+  # snakemake --snakefile snakefile.py -np --list-conda-envs
+	fd -t f -d 1 --hidden . '.snakemake/conda' | fzf --height=100%  --ansi --preview "cat {}" | sed 's/.yaml//'
+
 	
 runsnakemake:
-	module purge 
-	module load snakemake/7.30.1
-	snakemake -p -c4 --snakefile snakefile.py --keep-incomplete --use-conda 
+	snakemake -p -c8 --rerun-triggers mtime --snakefile snakefile.py --keep-incomplete --use-conda -R  msamtools 
+
+np_runsnakemake:
+	snakemake -np -c8 --rerun-triggers mtime --snakefile snakefile.py --keep-incomplete --use-conda -R  msamtools 
 
 unlockdir:
 	snakemake -p --unlock --snakefile snakefile.py
