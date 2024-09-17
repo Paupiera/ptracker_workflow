@@ -1,8 +1,10 @@
 SHELL:=/bin/bash
-SFILE = snakefile.smk
+SFILE = snakefile.py
 
 all:
-	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime
+	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime --rerun-incomplete \
+	# -R Rename_Contigs
+
 	
 runsnakemake:
 	snakemake -p -c4 --snakefile $(SFILE) --rerun-triggers mtime

@@ -3,7 +3,7 @@ files: "./config/accessions.txt"
 
 fastp: 
   walltime: "10-00:00:00"
-  threads: 8 
+  threads: 10 
   mem_gb: 120
 
 get_time:
@@ -19,5 +19,5 @@ combine_binbench:
   mem_gb: 10
 
 vamb_for_strobealign_default:
-  threads: 40 
+  threads: 10 
   mem_gb: 100

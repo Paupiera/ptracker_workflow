@@ -74,6 +74,7 @@ rule Rename_Contigs:
         shell:
             """
             cat {input.contig} | sed "/^>/ s/^>NODE/>S{wildcards.value}CNODE/" > {output}
+
             """
 
 rulename="cat_contigs"
