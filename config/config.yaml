@@ -47,6 +47,15 @@ run_geNomad:
   threads: 16
   mem_gb: 245
 
+create_assembly_alignment_graph:
+  walltime: "05-00:00:00"
+  threads: 5
+  mem_gb: 500
+
+run_vamb_asymmetric:
+  walltime: "05-00:00:00"
+  threads: 5
+  mem_gb: 250
 
 fastq_end: ".fastq.gz"
 

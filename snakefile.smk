@@ -20,7 +20,7 @@ PAU_SRC_DIR = "bin/ptracker/src/workflow"
 # Define deault threads/walltime/mem_gb
 default_walltime = "48:00:00"
 default_threads = 1
-default_mem_gb = 15
+default_mem_gb = 50
 
 # Functions to get the config-defined threads/walltime/mem_gb for a rule and if not defined the default
 threads_fn = lambda rulename: config.get(rulename, {"threads": default_threads}).get("threads", default_threads) 
@@ -83,34 +83,34 @@ except FileExistsError:
 
 rule all:
     input:
-        #expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
-        #expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),key=sample_id.keys()),
-        #expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
+        expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
+        expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv'),key=sample_id.keys()),
+        expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
-        expand_dir("data/sample_[key]/mp_spades_[value]/contigs.fasta", sample_id),
+        #expand_dir("data/sample_[key]/mp_spades_[value]/contigs.fasta", sample_id),
 
-rulename = "fastp"
-rule fastp:
-    input: 
-       fw = read_fw, 
-       rv = read_rv, 
-    output:
-       html = "data/sample_{key}/reads_fastp/{id}/report.html", # TODO insert stuff
-       json = "data/sample_{key}/reads_fastp/{id}/report.json",
-       fw = read_fw_after_fastp, 
-       rv = read_rv_after_fastp, 
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
-    log: config.get("log", "log/") + "{key}_{id}_" + rulename
-    shell:
-            'bin/fastp -i {input.fw:q} -I {input.rv:q} '
-            '-o {output.fw:q} -O {output.rv:q} --html {output.html:q} --json {output.json:q} '
-            '--trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front '
-            '--cut_window_size 6  '
-            '--thread {threads} 2> {log:q}'
+#rulename = "fastp"
+#rule fastp:
+#    input: 
+#       fw = read_fw, 
+#       rv = read_rv, 
+#    output:
+#       html = "data/sample_{key}/reads_fastp/{id}/report.html", # TODO insert stuff
+#       json = "data/sample_{key}/reads_fastp/{id}/report.json",
+#       fw = read_fw_after_fastp, 
+#       rv = read_rv_after_fastp, 
+#    threads: threads_fn(rulename)
+#    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+#    log: config.get("log", "log/") + "{key}_{id}_" + rulename
+#    shell:
+#            'bin/fastp -i {input.fw:q} -I {input.rv:q} '
+#            '-o {output.fw:q} -O {output.rv:q} --html {output.html:q} --json {output.json:q} '
+#            '--trim_poly_g --poly_g_min_len 7 --cut_tail --cut_front '
+#            '--cut_window_size 6  '
+#            '--thread {threads} 2> {log:q}'
 
 rulename = "spades"
 rule spades:
