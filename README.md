@@ -1,4 +1,4 @@
-# Pipeline for running PLAMB from reads
+# Pipeline for running PLAMB
 Pipeline for running Plamb: https://github.com/RasmussenLab/vamb/tree/vamb_n2v_asy
 
 
