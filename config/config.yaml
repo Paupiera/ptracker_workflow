@@ -1,45 +1,45 @@
 files: "./config/accessions.txt"
 
-mpSpades: 
+mpSpades:
   walltime: "15-00:00:00"
   threads: 60
   mem_gb: 950
 
-fastp: 
+fastp:
   walltime: "10-00:00:00"
-  threads: 8 
+  threads: 8
   mem_gb: 120
-  
-spades: 
+
+spades:
   walltime: "15-00:00:00"
-  threads: 16 # 16 is default in metaSpades
+  threads: 16
   mem_gb: 245
 
-SCAPP: 
+SCAPP:
   walltime: "45-00:00:00"
-  threads: 63 
+  threads: 63
   mem_gb: 990
 
 index:
-  threads: 8 
+  threads: 8
   mem_gb: 120
 
-minimap: 
+minimap:
   walltime: "10-00:00:00"
-  threads: 16 
+  threads: 16
   mem_gb: 245
 
 sort:
-  threads: 8 
+  threads: 8
   mem_gb: 120
 
 align_contigs:
-  threads:  8 
+  threads: 8
   mem_gb: 120
 
 vamb_asymmetric:
   walltime: "05-00:00:00"
-  threads: 16 
+  threads: 16
   mem_gb: 245
 
 run_geNomad:
@@ -59,7 +59,6 @@ run_vamb_asymmetric:
 
 fastq_end: ".fastq.gz"
 
-
 # Options from pau pipeline
 contigs_filtered_file: "/home/projects/ku_00197/people/lasdan/contig_cutoff/vamb_ptracker_done/Gastrointestinal/para_2000/contigs.flt.fna.gz"
 abundance_file: "/home/projects/ku_00197/people/lasdan/contig_cutoff/vamb_ptracker_done/Gastrointestinal/para_2000/abundance.npz"
@@ -74,24 +73,8 @@ plamb_preload: ""
 outdir: "./data"
 assembly_graph_dir: "/home/projects/ku_00197/data/ptracker/cache/as_mp_merged_reads_ef/Gastrointestinal/"
 renaming_file: "/home/projects/ku_00197/people/paupie/repo/ptracker_2/ptracker/tmp/renaming_files/renamed_Gastrointestinal"
-n2v_ed: '32'
-n2v_wl: '10'
-n2v_ws: '10'
-n2v_p: '0.1'
-n2v_q: '2.0'
-
-
-# Old
-# Datafiles cuhange
-contigs: 
-sample_data: 
-config_path: 
-sample: 
-times_run_vamb: 
-# Directories
-outdir:
-vambsrc: /home/people/lasdan/lasdan/vamb_versions/vamb/src/
-# Module envs
-moduleenvs:
-  minimap2: minimap2/2.6
-  samtools: samtools/1.17
+n2v_ed: "32"
+n2v_wl: "10"
+n2v_ws: "10"
+n2v_p: "0.1"
+n2v_q: "2.0"
