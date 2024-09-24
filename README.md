@@ -1,4 +1,5 @@
 # The pipeline for running PLAMB
+Pipeline for running Plamb: https://github.com/RasmussenLab/vamb/tree/vamb_n2v_asy
 
 ## Important Files
 - snakefile.smk: The snakemake pipeline
