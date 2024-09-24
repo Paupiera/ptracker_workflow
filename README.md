@@ -1,28 +1,30 @@
+# The pipeline for running PLAMB
 
-TODO:
-vamb_default er fra ptracekr git 
+## Important Files
+- snakefile.smk: The snakemake pipeline
+- utils.py: utils used by the pipeline
+- config: directory with the configuration files
+  - accesions.txt: Sample information
+  - config.yaml: configuration for the pipeline eg. resourcess
+- envs: directory with the conda environment descriptions
 
+## Creating the env for plamb
+```
+# create the conda env from the yaml file: pipeline_conda.yaml
+  conda env create --file=pipeline_conda.yaml
 
+# activate the conda env
+  conda activate ptracker_pipeline4
 
-conda envs er funky -- suprise
-try with module snakemake -- in the future all conda should be called through snakemake, 
-and snakemake can then be it's own env
-- does not work as the module snakemake messes everything up
-- Try with conda env through snakemake and pray to god
- 
+# manually install packages for vamb through pip,
+# making sure to use the pip-version associated with the conda env
+  pip install numpy==1.24.2 torch==1.13.1 pycoverm==0.6.0 networkx==3.1 scikit-learn==1.2.2 pandas==2.0.0 dadaptation==3.0 loguru==0.7.2 fastnode2vec scipy==1.10.1
 
-# TODO megahit istedet for spades?
-# TODO Downloading downloas 3 files, _1 and _2 and a second - what is it.. and should it be used (likey non-paired reads something)
-# TODO Compress non-interleved fastq files
-
-
-df = pd.read_csv("./config/test_accessions.txt", sep="\s+", comment="#")
-sample_id = {}
-sample_path = {}
-for sample, id, path in zip(df.SAMPLE, df.ID, df.PATH):
-    id = str(id)
-    path = str(path)
-    sample = str(sample)
-
-    populate_dict_of_lists(sample_id, sample, id)
-    populate_dict_of_lists(sample_path, sample, path)
+# clone avamb and and pip install it
+  git clone https://github.com/RasmussenLab/vamb -b vamb_n2v_asy
+  pip install -e path/to/vamb_n2v_asy
+```
+## Misc files
+Makefile - various small scripts for running the pipeline
+clustersubmit.sh - script for submitting the snakefile to SLURM
+parse_snakemake_output.py - small script for viewing snakefile logs

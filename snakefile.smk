@@ -530,7 +530,7 @@ rule SCAPP:
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
     log: config.get("log", "log/") + "{key}_{id}_" + rulename
-    conda: "install_scapp.yaml"
+    conda: "envs/install_scapp.yaml"
     shell:
         """
         scapp -g {input.graph} -o {params.true_output} -r1 {input.fw} -r2 {input.rv} -p {threads}
