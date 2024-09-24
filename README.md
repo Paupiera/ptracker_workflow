@@ -1,13 +1,6 @@
 # Pipeline for running PLAMB from reads
 Pipeline for running Plamb: https://github.com/RasmussenLab/vamb/tree/vamb_n2v_asy
 
-## Important Files
-- snakefile.smk: The snakemake pipeline
-- utils.py: utils used by the pipeline
-- config: directory with the configuration files
-  - accesions.txt: Sample information
-  - config.yaml: configuration for the pipeline eg. resourcess
-- envs: directory with the conda environment descriptions
 
 ## Running the pipeline
 ```
@@ -59,6 +52,14 @@ and running the pipeline with 4 threads
   git clone https://github.com/RasmussenLab/vamb -b vamb_n2v_asy
   pip install -e path/to/vamb_n2v_asy
 ```
+## Important Files
+- snakefile.smk: The snakemake pipeline
+- utils.py: utils used by the pipeline
+- config: directory with the configuration files
+  - accesions.txt: Sample information
+  - config.yaml: configuration for the pipeline eg. resourcess
+- envs: directory with the conda environment descriptions
+
 ## Misc files
 Makefile - various small scripts for running the pipeline
 clustersubmit.sh - script for submitting the snakefile to SLURM
