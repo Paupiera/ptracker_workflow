@@ -171,19 +171,6 @@ rule get_contig_names:
     shell:
         "zcat {input} | grep '>' | sed 's/>//' > {output} 2> {log} "
 
-# Index resulting contig-file with minimap2
-rulename="index"
-rule index:
-    input:
-        contigs = "data/sample_{key}/contigs.flt.fna.gz"
-    output:
-        mmi = "data/sample_{key}/contigs.flt.mmi"
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
-    log: config.get("log", "log/") + "{key}_" + rulename
-    shell:
-        "minimap2 -d {output} {input} 2> {log} "
 
 rulename = "Strobealign_bam_default"
 rule Strobealign_bam_default:
