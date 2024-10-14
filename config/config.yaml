@@ -1,4 +1,4 @@
-files: "./config/sample_list.txt"
+files: "./config/sample_list_darwin.txt"
 
 # Options from pau pipeline
 outdir: "./data"
@@ -21,7 +21,7 @@ default_walltime: "48:00:00"
 default_threads: 1
 default_mem_gb: 50
 
-# Setting 
+# Setting
 mpSpades:
   walltime: "15-00:00:00"
   threads: 60
@@ -78,4 +78,3 @@ run_vamb_asymmetric:
   walltime: "05-00:00:00"
   threads: 5
   mem_gb: 250
-
