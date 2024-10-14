@@ -1,5 +1,5 @@
-# files: "./config/sample_list_darwin.tsv"
-files: "./config/sample_list.tsv"
+files: "./config/sample_list_darwin.tsv"
+# files: "./config/sample_list.tsv"
 
 # Options from pau pipeline
 outdir: "./data"

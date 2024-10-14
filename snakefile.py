@@ -231,13 +231,13 @@ MAX_INSERT_SIZE_CIRC = 50
 rule circularize:
     input:
         # dir_bams=BAMS_DIR
-        dir_bams = lambda wildcards: directory("data/sample_{key}/mapped_sorted"),
         bamfiles = lambda wildcards: expand("data/sample_{key}/mapped_sorted/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
     output:
         os.path.join(OUTDIR,'{key}','tmp','circularisation','max_insert_len_%i_circular_clusters.tsv.txt'%MAX_INSERT_SIZE_CIRC),
         os.path.join(OUTDIR,'{key}','log/circularisation/circularisation.finished')
     params:
         path = os.path.join(PAU_SRC_DIR, 'src', 'circularisation.py'),
+        dir_bams = lambda wildcards: directory("data/sample_{key}/mapped_sorted"),
     threads: threads_fn(rulename),
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
@@ -245,7 +245,7 @@ rule circularize:
     log: config.get("log", "log/") + "{key}_" + rulename
     shell:
         """
-        python {params.path} --dir_bams {input[0]} --outcls {output[0]} --max_insert {MAX_INSERT_SIZE_CIRC}
+        python {params.path} --dir_bams {params.dir_bams} --outcls {output[0]} --max_insert {MAX_INSERT_SIZE_CIRC}
         touch {output[1]}
         """        
 
@@ -428,6 +428,8 @@ rule run_vamb_asymmetric:
         bins = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
         finished = os.path.join(OUTDIR,"{key}",'log/run_vamb_asymmetric.finished'),
         lengths = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','lengths.npz'),
+        vae_clusters = os.path.join(OUTDIR, '{key}','vamb_asymmetric/vae_clusters_community_based_complete_unsplit.tsv'),
+        compo = os.path.join(OUTDIR, '{key}','vamb_asymmetric/composition.npz'),
     params:
         walltime='86400',
         cuda='--cuda' if CUDA else ''
