@@ -1,8 +1,11 @@
 SFILE = snakefile.py
 
 all:
-	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime
-	
+	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime -R align_contigs
+
+split_fst:
+	python split_fasta.py --help
+
 runsnakemake:
 	snakemake -p -c4 --snakefile $(SFILE) --rerun-triggers mtime
 

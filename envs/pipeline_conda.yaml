@@ -6,24 +6,24 @@ channels:
   - defaults
 dependencies:
   - python==3.9.0
-  - minimap2 
-  - samtools 
+  - minimap2
+  - samtools
   - spades
   - blast
   - genomad
   - snakemake
-
+  - networkx
 
   # - pip:
   #   - numpy==1.24.2
-  #   - torch==1.13.1 
-  #   - pycoverm==0.6.0 
-  #   - networkx==3.1 
-  #   - scikit-learn==1.2.2 
-  #   - pandas==2.0.0 
-  #   - dadaptation==3.0 
+  #   - torch==1.13.1
+  #   - pycoverm==0.6.0
+  #   - networkx==3.1
+  #   - scikit-learn==1.2.2
+  #   - pandas==2.0.0
+  #   - dadaptation==3.0
   #   - loguru==0.7.2
-      # works for regular pip packages
-      #   - docx
-      #     - gooey
-      #       - matplotlib==2.0.0  # pin version for pip
+  # works for regular pip packages
+  #   - docx
+  #     - gooey
+  #       - matplotlib==2.0.0  # pin version for pip
