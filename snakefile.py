@@ -185,49 +185,27 @@ rule index:
     shell:
         "minimap2 -d {output} {input} 2> {log} "
 
-# This rule creates a SAM header from a FASTA file.
-# We need it because minimap2 for truly unknowable reasons will write
-# SAM headers INTERSPERSED in the output SAM file, making it unparseable.
-# To work around this mind-boggling bug, we remove all header lines from
-# minimap2's SAM output by grepping, then re-add the header created in this
-# rule.
-rulename="dict"
-rule dict:
-    input:
-        contigs = "data/sample_{key}/contigs.flt.fna.gz",
-    output:
-        "data/sample_{key}/contigs.flt.dict"
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
-    log: config.get("log", "log/") + "{key}_" + rulename
-    shell:
-        "samtools dict {input.contigs} | cut -f1-3 > {output} 2> {log} "
-
-# Generate bam files 
-LONG_READS = False
-rulename="minimap"
-rule minimap:
-    input:
-        fw = read_fw_after_fastp,
-        rv = read_rv_after_fastp,
-        mmi ="data/sample_{key}/contigs.flt.mmi",
-        dict = "data/sample_{key}/contigs.flt.dict",
-    output:
-        bam = "data/sample_{key}/mapped/{id}.bam"
-    params:
-        long_or_short_read = 'map-pb -L' if LONG_READS else 'sr',
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
-    log: config.get("log", "log/") + "{key}_{id}_" + rulename
-    shell:
-        # See comment over rule "dict" to understand what happens here
-        "minimap2 -t {threads} -ax {params.long_or_short_read} {input.mmi} {input.fw} {input.rv} "
-        " | grep -v '^@'"
-        " | cat {input.dict} - "
-        " | samtools view -F 3584 -b - " # supplementary, duplicate read, fail QC check
-        " > {output.bam} 2> {log} "
+rulename = "Strobealign_bam_default"
+rule Strobealign_bam_default:
+        input: 
+            fw = read_fw_after_fastp,
+            rv = read_rv_after_fastp,
+            contigs = "data/sample_{key}/contigs.flt.fna.gz",
+            # fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
+            # rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
+            # contig = "results/{key}/contigs.flt.fna",
+        output:
+            "data/sample_{key}/mapped/{id}.bam"
+        threads: threads_fn(rulename)
+        log: return_none_or_default(config, "log", "log/")+"{key}_{value}_" + rulename
+        benchmark: return_none_or_default(config, "benchmark", "benchmark/")+"{key}_{value}_" + rulename
+        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+        conda: "envs/strobe_env.yaml"
+        shell:
+            """
+            module load samtools
+            strobealign -t {threads} {input.contig} {input.fw} {input.rv} | samtools sort -o {output} 2> {log}
+            """
 
  # Sort bam files
 rulename="sort"
