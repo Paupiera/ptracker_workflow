@@ -1,6 +1,5 @@
 configfile: "config/config.yaml"
 
-from utils import expand_dir
 import pandas as pd
 import collections
 import os
@@ -16,11 +15,10 @@ shell.prefix("""
 OUTDIR= "outdir_plamb" #config["outdir"] #get_config('outdir', 'outdir_plamb', r'.*') # TODO fix
 PAU_SRC_DIR = "bin/ptracker/src/workflow"  
 
-
 # Define deault threads/walltime/mem_gb
-default_walltime = "48:00:00"
-default_threads = 1
-default_mem_gb = 50
+default_walltime = config.get("default_walltime")
+default_threads = config.get("default_threads")
+default_mem_gb = config.get("default_mem_gb")
 
 # Functions to get the config-defined threads/walltime/mem_gb for a rule and if not defined the default
 threads_fn = lambda rulename: config.get(rulename, {"threads": default_threads}).get("threads", default_threads) 

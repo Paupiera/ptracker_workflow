@@ -1,4 +1,4 @@
-SFILE = snakefile.smk
+SFILE = snakefile.py
 
 all:
 	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime
