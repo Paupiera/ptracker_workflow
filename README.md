@@ -46,7 +46,7 @@ and running the pipeline with 4 threads
 
 # manually install packages for vamb through pip,
 # making sure to use the pip-version associated with the conda env
-  pip install numpy==1.24.2 torch==1.13.1 pycoverm==0.6.0 networkx==3.1 scikit-learn==1.2.2 pandas==2.0.0 dadaptation==3.0 loguru==0.7.2 fastnode2vec scipy==1.10.1 fastnode2vec
+  pip install numpy==1.24.2 torch==1.13.1 pycoverm==0.6.0 networkx==3.1 scikit-learn==1.2.2 pandas==2.0.0 dadaptation==3.0 loguru==0.7.2 fastnode2vec scipy==1.10.1 fastnode2vec pysam
 
 # clone avamb and and pip install it
   git clone https://github.com/RasmussenLab/vamb -b vamb_n2v_asy

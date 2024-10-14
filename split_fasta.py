@@ -1,4 +1,5 @@
-import click
+# import click
+import rich_click as click
 
 def readfasta(filename):
     '''Reading in several fasta files
@@ -26,11 +27,10 @@ def readfasta(filename):
     yield dna, oldheader
     file.close()
 
-import click
 @click.command()
-@click.option('--fasta_all_contigs', type=click.Path(exists=True), required = True)
-@click.option('--clusterfile_plasmid', type=click.Path(exists=True), required = True)
-@click.option('--clusterfile_chromosome', type=click.Path(exists=True), required = True)
+@click.option('--fasta_all_contigs', type=click.Path(exists=True), required = True, help="Fasta file containing all contigs to sort through")
+@click.option('--clusterfile_plasmid', type=click.Path(exists=True), required = True, help="Clusterfile in vambs output format of all plasmids")
+@click.option('--clusterfile_chromosome', type=click.Path(exists=True), required = True, help="Clusterfile in vambs output format of all non-plasmids")
 def split_fasta(fasta_all_contigs, clusterfile_plasmid, clusterfile_chromosome):
     import pandas as pd                                                              
     import sys
@@ -58,9 +58,9 @@ def split_fasta(fasta_all_contigs, clusterfile_plasmid, clusterfile_chromosome):
     plasmids = set(df_plasmid.contigname)
 
     plasmid_dir = "candidate_plasmids"
-    os.mkdir("candidate_plasmids")
+    os.mkdir("candidate_plasmids",  exist_ok=True)
     chromosome_dir = "candidate_chromosomes"
-    os.mkdir("candidate_chromosomes")
+    os.mkdir("candidate_chromosomes",  exist_ok=True)
 
 # Write to the split fastafiles
     with open(f'{plasmid_dir}/plasmids.fna', 'w') as plasmid_file, \

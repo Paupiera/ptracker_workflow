@@ -83,8 +83,9 @@ rule all:
     input:
         expand(os.path.join(OUTDIR, "{key}", 'log/run_vamb_asymmetric.finished'), key=sample_id.keys()),
         expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_graph_thr_0.75_candidate_plasmids.tsv'),key=sample_id.keys()),
-        expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit_geNomadplasclustercontigs_extracted_thr_0.75_thrcirc_0.5.tsv'),key=sample_id.keys()),
+        # expand(os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_graph_thr_0.75_candidate_plasmids.tsv'),key=sample_id.keys()),
         expand(os.path.join(OUTDIR,"{key}",'log/run_geNomad.finished'), key=sample_id.keys()),
+        # "tst"
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand("data/sample_{key}/vamb_default", key=sample_id.keys()),
         # expand_dir("data/sample_[key]/scapp_[value]/delete_me", sample_id)
@@ -202,7 +203,7 @@ rule sort:
     input:
         "data/sample_{key}/mapped/{id}.bam",
     output:
-        "data/sample_{key}/mapped/{id}.bam.sort",
+        "data/sample_{key}/mapped_sorted/{id}.bam.sort",
     threads: threads_fn(rulename)
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
@@ -220,6 +221,33 @@ rule sort:
 #   5. Connect hoods with alignment graphs
 #   6. Run vamb to merge the hoods
 #   7. Classify bins/clusters into plasmid/organism/virus bins/clusters
+
+
+## TODO MISING
+MAX_INSERT_SIZE_CIRC = 50
+
+
+# 0.Look for contigs circularizable EVERYTHING NEW
+rule circularize:
+    input:
+        # dir_bams=BAMS_DIR
+        dir_bams = lambda wildcards: directory("data/sample_{key}/mapped_sorted"),
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped_sorted/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
+    output:
+        os.path.join(OUTDIR,'{key}','tmp','circularisation','max_insert_len_%i_circular_clusters.tsv.txt'%MAX_INSERT_SIZE_CIRC),
+        os.path.join(OUTDIR,'{key}','log/circularisation/circularisation.finished')
+    params:
+        path = os.path.join(PAU_SRC_DIR, 'src', 'circularisation.py'),
+    threads: threads_fn(rulename),
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+    conda: "envs/pipeline_conda.yaml"
+    log: config.get("log", "log/") + "{key}_" + rulename
+    shell:
+        """
+        python {params.path} --dir_bams {input[0]} --outcls {output[0]} --max_insert {MAX_INSERT_SIZE_CIRC}
+        touch {output[1]}
+        """        
 
 # Align contigs all against all
 rulename = "align_contigs"
@@ -368,7 +396,8 @@ rule extract_neighs_from_n2v_embeddings:
         contig_names_file = "data/sample_{key}/contigs.names.sorted"
     output:
         directory(os.path.join(OUTDIR,"{key}",'tmp','neighs')),
-        os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R),
+        os.path.join(OUTDIR,'{key}','tmp','neighs','neighs_intraonly_rm_object_r_%s.npz'%NEIGHS_R),
+        # os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R),
         os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished')
     params:
         path = os.path.join(PAU_SRC_DIR, 'src', 'embeddings_to_neighs.py'),
@@ -391,8 +420,9 @@ rule run_vamb_asymmetric:
         notused = os.path.join(OUTDIR,"{key}",'log','neighs','extract_neighs_from_n2v_embeddings.finished'), # TODO why is this not used?
         contigs = "data/sample_{key}/contigs.flt.fna.gz",
         # bamfiles = expand_dir("data/sample_[key]/mapped/[value].bam.sort", sample_id), 
-        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
-        nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped_sorted/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
+        nb_file = os.path.join(OUTDIR,'{key}','tmp','neighs','neighs_intraonly_rm_object_r_%s.npz'%NEIGHS_R)
+        # nb_file = os.path.join(OUTDIR,"{key}",'tmp','neighs','neighs_object_r_%s.npz'%NEIGHS_R)#,
     output:
         directory = directory(os.path.join(OUTDIR,"{key}", 'vamb_asymmetric')),
         bins = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
@@ -438,6 +468,29 @@ rule run_geNomad:
         touch {output[1]}
         """
 
+## 7. Merge graph clustes with circular clusters
+rule merge_circular_with_graph_clusters:
+    input:
+        os.path.join(OUTDIR,'{key}','log/run_vamb_asymmetric.finished'),
+        os.path.join(OUTDIR,'{key}','log/circularisation/circularisation.finished'),
+        os.path.join(OUTDIR,'{key}','tmp','circularisation','max_insert_len_%i_circular_clusters.tsv.txt'%MAX_INSERT_SIZE_CIRC),
+        vae_clusters = os.path.join(OUTDIR, '{key}','vamb_asymmetric/vae_clusters_community_based_complete_unsplit.tsv')
+    output:
+        os.path.join(OUTDIR,'{key}','vamb_asymmetric','vae_clusters_community_based_complete_and_circular_unsplit.tsv'),
+        os.path.join(OUTDIR,'{key}','log/merge_circular_with_graph_clusters.finished')
+    params:
+        path=os.path.join(PAU_SRC_DIR, 'src', 'merge_circular_plamb_clusters.py'),
+    threads: threads_fn(rulename)
+    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+    log: config.get("log", "log/") + "{key}_" + rulename
+    conda: "envs/pipeline_conda.yaml"
+    shell:
+        """
+        python {params.path} --cls_plamb {input.vae_clusters} --cls_circular {input[2]} --outcls {output[0]}
+        touch {output[1]}
+        """
+
 ## 7. Classify bins/clusters into plasmid/organism/virus bins/clusters
 rulename = "classify_bins_with_geNomad"
 rule classify_bins_with_geNomad:
@@ -448,12 +501,14 @@ rule classify_bins_with_geNomad:
         os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit.tsv'),
         contignames = "data/sample_{key}/contigs.names.sorted",
         lengths = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','lengths.npz'),
+        comm_clusters = os.path.join(OUTDIR,'{key}','vamb_asymmetric','vae_clusters_community_based_complete_and_circular_unsplit.tsv'),
+        composition = os.path.join(OUTDIR,'{key}','vamb_asymmetric','composition.npz'),
     output:
         os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_graph_thr_0.75_candidate_plasmids.tsv'),
-        os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit_geNomadplasclustercontigs_extracted_thr_0.75_thrcirc_0.5.tsv'),
+        # os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_unsplit_geNomadplasclustercontigs_extracted_thr_0.75_thrcirc_0.5.tsv'),
         os.path.join(OUTDIR,"{key}",'log','classify_bins_with_geNomad.finished')
     params:
-        path = os.path.join(PAU_SRC_DIR, 'src', 'classify_bins_with_geNomad.py'),
+        path = os.path.join(PAU_SRC_DIR, 'src', 'classify_bins_with_geNomad_strict_circular.py'),
     threads: threads_fn(rulename)
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
@@ -461,11 +516,26 @@ rule classify_bins_with_geNomad:
     conda: "envs/pipeline_conda.yaml"
     shell:
         """
-        python {params.path} --clusters {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_within_radius_with_looners_complete_unsplit.tsv\
-         --dflt_cls {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_unsplit.tsv --scores {input[0]} --outp {output[0]} --lengths {input.lengths} --contignames {input.contignames}
+        python {params.path} --clusters {input.comm_clusters} \
+         --dflt_cls {OUTDIR}/{wildcards.key}/vamb_asymmetric/vae_clusters_density_unsplit.tsv --scores {input[0]} --outp {output[0]} \
+         --composition {input.composition}
+         # --lengths {input.lengths} --contignames {input.contignames} --composition {input.composition}
         touch {output[1]}
         """
 
+# rulename = "checkm2"
+# rule checkm2:
+#         output:
+#             "tst"
+#         threads: threads_fn(rulename)
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+#         log: config.get("log", "log/") + "{key}_" + rulename
+#         conda: "envs/checkm2.yml"
+#         shell:
+#             """
+#             echo hello
+#             """
 
 
 ## EXTRA FOR TESTING 
@@ -474,7 +544,7 @@ rulename = "VAMB_DEFAULT"
 rule VAMB_DEFAULT:
     input: 
         contig = "data/sample_{key}/contigs.flt.fna.gz",
-        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
+        bamfiles = lambda wildcards: expand("data/sample_{key}/mapped_sorted/{id}.bam.sort", key=wildcards.key, id=sample_id[wildcards.key]),
     output:
         dir = directory("data/sample_{key}/vamb_default"),
     threads: threads_fn(rulename)
