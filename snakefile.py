@@ -4,8 +4,8 @@ import pandas as pd
 import collections
 import os
 
-# shell.prefix("source activate ~/bxc755/miniconda3/envs/ptracker_pipeline4; ")
 shell.prefix("""
+    module purge
     module unload gcc/13.2.0
     module unload gcc/12.2.0
     module load gcc/13.2.0;
@@ -132,85 +132,85 @@ rule all:
 #        "-o {output.outdir} -1 {input.fw} -2 {input.rv} " 
 #        "-t {threads} --memory {resources.mem_gb} > {log} " 
 
-rulename = "rename_contigs"
-rule rename_contigs:
-    input:
-        "data/sample_{key}/spades_{id}/contigs.fasta"
-    output:
-        "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
-    log: config.get("log", "log/") + "{key}_{id}_" + rulename
-    shell:
-        """
-        sed 's/^>/>S{wildcards.id}C/' {input} > {output} 2> {log}
-        """
+# rulename = "rename_contigs"
+# rule rename_contigs:
+#     input:
+#         "data/sample_{key}/spades_{id}/contigs.fasta"
+#     output:
+#         "data/sample_{key}/spades_{id}/contigs.renamed.fasta"
+#     threads: threads_fn(rulename)
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+#     log: config.get("log", "log/") + "{key}_{id}_" + rulename
+#     shell:
+#         """
+#         sed 's/^>/>S{wildcards.id}C/' {input} > {output} 2> {log}
+#         """
 
-rulename="cat_contigs"
-rule cat_contigs:
-    input: lambda wildcards: expand("data/sample_{key}/spades_{id}/contigs.renamed.fasta", key=wildcards.key, id=sample_id[wildcards.key]),
-        # expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
-    output: "data/sample_{key}/contigs.flt.fna.gz"
-    threads: threads_fn(rulename)
-    params: script = "bin/vamb/src/concatenate.py"
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}" + rulename
-    log: config.get("log", "log/") + "{key}_" + rulename
-    conda: "envs/pipeline_conda.yaml"
-    shell: 
-        "python {params.script} {output} {input} 2> {log} "  # TODO should filter depending on size????
+# rulename="cat_contigs"
+# rule cat_contigs:
+#     input: lambda wildcards: expand("data/sample_{key}/spades_{id}/contigs.renamed.fasta", key=wildcards.key, id=sample_id[wildcards.key]),
+#         # expand_dir("data/sample_[key]/spades_[value]/contigs.renamed.fasta", sample_id)
+#     output: "data/sample_{key}/contigs.flt.fna.gz"
+#     threads: threads_fn(rulename)
+#     params: script = "bin/vamb/src/concatenate.py"
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     benchmark: config.get("benchmark", "benchmark/") + "{key}" + rulename
+#     log: config.get("log", "log/") + "{key}_" + rulename
+#     conda: "envs/pipeline_conda.yaml"
+#     shell: 
+#         "python {params.script} {output} {input} 2> {log} "  # TODO should filter depending on size????
 
-rulename = "get_contig_names"
-rule get_contig_names:
-    input:
-        "data/sample_{key}/contigs.flt.fna.gz"
-    output: 
-        "data/sample_{key}/contigs.names.sorted"
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
-    log: config.get("log", "log/") + "{key}_" + rulename
-    shell:
-        "zcat {input} | grep '>' | sed 's/>//' > {output} 2> {log} "
+# rulename = "get_contig_names"
+# rule get_contig_names:
+#     input:
+#         "data/sample_{key}/contigs.flt.fna.gz"
+#     output: 
+#         "data/sample_{key}/contigs.names.sorted"
+#     threads: threads_fn(rulename)
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+#     log: config.get("log", "log/") + "{key}_" + rulename
+#     shell:
+#         "zcat {input} | grep '>' | sed 's/>//' > {output} 2> {log} "
 
 
-rulename = "Strobealign_bam_default"
-rule Strobealign_bam_default:
-        input: 
-            fw = read_fw_after_fastp,
-            rv = read_rv_after_fastp,
-            contig = "data/sample_{key}/contigs.flt.fna.gz",
-            # fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
-            # rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
-            # contig = "results/{key}/contigs.flt.fna",
-        output:
-            "data/sample_{key}/mapped/{id}.bam"
-        threads: threads_fn(rulename)
-        resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-        benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
-        log: config.get("log", "log/") + "{key}_{id}_" + rulename
-        conda: "envs/strobe_env.yaml"
-        shell:
-            """
-            # module load samtools
-            strobealign -t {threads} {input.contig} {input.fw} {input.rv} | samtools sort -o {output} 2> {log}
-            """
+# rulename = "Strobealign_bam_default"
+# rule Strobealign_bam_default:
+#         input: 
+#             fw = read_fw_after_fastp,
+#             rv = read_rv_after_fastp,
+#             contig = "data/sample_{key}/contigs.flt.fna.gz",
+#             # fw = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][0],
+#             # rv = lambda wildcards: sample_id_path[wildcards.key][wildcards.value][1],
+#             # contig = "results/{key}/contigs.flt.fna",
+#         output:
+#             "data/sample_{key}/mapped/{id}.bam"
+#         threads: threads_fn(rulename)
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+#         log: config.get("log", "log/") + "{key}_{id}_" + rulename
+#         conda: "envs/strobe_env.yaml"
+#         shell:
+#             """
+#             # module load samtools
+#             strobealign -t {threads} {input.contig} {input.fw} {input.rv} | samtools sort -o {output} 2> {log}
+#             """
 
- # Sort bam files
-rulename="sort"
-rule sort:
-    input:
-        "data/sample_{key}/mapped/{id}.bam",
-    output:
-        "data/sample_{key}/mapped_sorted/{id}.bam.sort",
-    threads: threads_fn(rulename)
-    resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
-    benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
-    log: config.get("log", "log/") + "{key}_{id}_" + rulename
-    conda: "envs/pipeline_conda.yaml"
-    shell:
-        "samtools sort {input} -o {output} "
+#  # Sort bam files
+# rulename="sort"
+# rule sort:
+#     input:
+#         "data/sample_{key}/mapped/{id}.bam",
+#     output:
+#         "data/sample_{key}/mapped_sorted/{id}.bam.sort",
+#     threads: threads_fn(rulename)
+#     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#     benchmark: config.get("benchmark", "benchmark/") + "{key}_{id}_" + rulename
+#     log: config.get("log", "log/") + "{key}_{id}_" + rulename
+#     conda: "envs/pipeline_conda.yaml"
+#     shell:
+#         "samtools sort {input} -o {output} "
 
 ## The next part of the pipeline is composed of the following steps:
 # (Despite the steps are numerated, some of the order might change)
@@ -224,10 +224,11 @@ rule sort:
 
 
 ## TODO MISING
-MAX_INSERT_SIZE_CIRC = 50
+MAX_INSERT_SIZE_CIRC = 50 # 50 is deafult
 
 
 # 0.Look for contigs circularizable EVERYTHING NEW
+rulename = "circularize"
 rule circularize:
     input:
         # dir_bams=BAMS_DIR
@@ -237,7 +238,7 @@ rule circularize:
         os.path.join(OUTDIR,'{key}','log/circularisation/circularisation.finished')
     params:
         path = os.path.join(PAU_SRC_DIR, 'src', 'circularisation.py'),
-        dir_bams = lambda wildcards: directory("data/sample_{key}/mapped_sorted"),
+        dir_bams = "data/sample_{key}/mapped_sorted",
     threads: threads_fn(rulename),
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
@@ -408,6 +409,7 @@ rule extract_neighs_from_n2v_embeddings:
     conda: "envs/pipeline_conda.yaml"
     shell:
         """
+        which python
         python {params.path} --embs {input[0]} --contigs_embs {input[1]}\
          --contignames {input.contig_names_file} -g {input[3]} -r {NEIGHS_R} --neighs_outdir {output[0]}
         touch {output[2]}
@@ -440,6 +442,7 @@ rule run_vamb_asymmetric:
     conda: "envs/pipeline_conda.yaml"
     shell:
         """
+        # pip install -e /home/bxc755/rasmussen/scratch/ptracker/ptracker/bin/vamb # TODO figure out a way of working smoothly
         rmdir {output.directory}
         {PLAMB_PRELOAD}
         vamb bin vae_asy --outdir {output.directory} --fasta {input.contigs} -p {threads} --bamfiles {input.bamfiles}\
@@ -471,6 +474,7 @@ rule run_geNomad:
         """
 
 ## 7. Merge graph clustes with circular clusters
+rulename = "merge_circular_with_graph_clusters"
 rule merge_circular_with_graph_clusters:
     input:
         os.path.join(OUTDIR,'{key}','log/run_vamb_asymmetric.finished'),

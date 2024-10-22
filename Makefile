@@ -1,7 +1,10 @@
 SFILE = snakefile.py
 
 all:
-	snakemake -np --snakefile  $(SFILE)  --rerun-triggers mtime --rerun-incomplete 
+	snakemake -np -F --snakefile  $(SFILE)  --rerun-incomplete 
+
+touch:
+	snakemake -p --snakefile  $(SFILE) --touch  --rerun-incomplete -c4
 
 split_fst:
 	python split_fasta.py --help

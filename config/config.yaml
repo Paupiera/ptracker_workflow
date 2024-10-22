@@ -40,6 +40,11 @@ spades:
 
 SCAPP:
   walltime: "45-00:00:00"
+  threads: 4
+  mem_gb: 150
+
+extract_neighs_from_n2v_embeddings:
+  walltime: "1-00:00:00"
   threads: 63
   mem_gb: 990
 

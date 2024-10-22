@@ -1,18 +1,26 @@
 name: ptracker_pipeline4
 
 channels:
+  - pytorch
   - conda-forge
   - bioconda
   - defaults
+
 dependencies:
   - python==3.9.0
   - minimap2
   - samtools
   - spades
   - blast
-  - genomad
   - snakemake
   - networkx
+  - pytorch
+  - pysam
+
+  - pip
+  - pip:
+      - -e /home/bxc755/rasmussen/scratch/ptracker/ptracker/bin/vamb
+      - fastnode2vec
 
   # - pip:
   #   - numpy==1.24.2

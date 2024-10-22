@@ -19,3 +19,4 @@ core.*
 snakejob*
 /bin/
 /results/
+log
