@@ -4,10 +4,19 @@ Pipeline for running Plamb: https://github.com/RasmussenLab/vamb/tree/vamb_n2v_a
 
 ## Running the pipeline
 ```
-# clone the repository
+# clone this repository
 git clone https://github.com/Las02/ptracker_workflow -b clean_up_the_code
 cd ptracker_workflow
+
+# Clone the Plamb directory and the Plamb helper script directory
+mkdir bin
+cd bin
+git clone https://github.com/RasmussenLab/vamb -b vamb_n2v_asy
+git clone https://github.com/Paupiera/ptracker
+
 ```
+
+
 
 The pipeline can be configurated in: ``` config/config.yaml ```
 Here the resources for each rule can be configurated as follows
@@ -33,7 +42,7 @@ with an installation of snakemake run the following to dry-run the pipeline
 ```
 and running the pipeline with 4 threads
 ```
-	snakemake -p -c4 --snakefile snakefile.smk
+	snakemake -p -c4 --snakefile snakefile.smk --use-conda
 ```
 
 ## Creating the env for plamb
