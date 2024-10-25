@@ -1,7 +1,7 @@
 SFILE = snakefile.py
 
 all:
-	snakemake -np -F --snakefile  $(SFILE)  --rerun-incomplete 
+	snakemake -np  --snakefile  $(SFILE)  --rerun-incomplete  --rerun-triggers mtime
 
 touch:
 	snakemake -p --snakefile  $(SFILE) --touch  --rerun-incomplete -c4

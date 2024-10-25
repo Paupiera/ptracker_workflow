@@ -291,8 +291,8 @@ rule weighted_assembly_graphs:
     conda: "envs/pipeline_conda.yaml"
     shell:
         """
-        python {params.path} --gfa {input[0]} --paths {input[1]} -s {wildcards.id} -m {MIN_CONTIG_LEN}  --out {output[0]} 2> {log}
-        touch {output[1]}
+        python {params.path} --gfa {input[0]} --paths {input[1]} -s {wildcards.id} -m {MIN_CONTIG_LEN}  --out {output[0]} 2> {log} \
+        && touch {output[1]}
         """
 
 # TODO Why does this exist?
@@ -466,7 +466,8 @@ rule run_geNomad:
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
     log: config.get("log", "log/") + "{key}_" + rulename
-    conda: "envs/pipeline_conda.yaml"
+    # conda: "envs/pipeline_conda.yaml"
+    conda: "envs/genomad.yaml"
     shell:
         """
         genomad end-to-end --cleanup {input} {output[0]}   {params.db_geNomad} --threads {threads}
@@ -519,6 +520,7 @@ rule classify_bins_with_geNomad:
     resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
     benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
     log: config.get("log", "log/") + "{key}_" + rulename
+    # conda: "envs/genomad.yaml"
     conda: "envs/pipeline_conda.yaml"
     shell:
         """
@@ -528,6 +530,46 @@ rule classify_bins_with_geNomad:
          # --lengths {input.lengths} --contignames {input.contignames} --composition {input.composition}
         touch {output[1]}
         """
+
+# rulename = "split_bins"
+# rule checkm2:
+#         input:
+#             contigs = "data/sample_{key}/contigs.flt.fna.gz",
+#             plasmid_clusters = os.path.join(OUTDIR,"{key}",'vamb_asymmetric','vae_clusters_graph_thr_0.75_candidate_plasmids.tsv'),
+#
+#         output:
+#             "tst"
+#         threads: threads_fn(rulename)
+#         resources: walltime = walltime_fn(rulename), mem_gb = mem_gb_fn(rulename)
+#         benchmark: config.get("benchmark", "benchmark/") + "{key}_" + rulename
+#         log: config.get("log", "log/") + "{key}_" + rulename
+#         conda: "envs/checkm2.yml"
+#         shell:
+#             """
+#
+#             python split_fasta.py --fasta_all_contigs {input.contigs} \
+#             --clusterfile_plasmid README.md --clusterfile_chromosome README.md
+#
+#             """
+    # clusterfile_plasmid = "/home/bxc755/rasmussen/scratch/ptracker/plasmid_graph/data/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv" 
+    # clusterfile_chromosome = "/home/bxc755/rasmussen/scratch/ptracker/plasmid_graph/data/vae_clusters_within_radius_with_looners_complete_unsplit_candidate_plasmids.tsv" 
+
+# /050   abundance.npz
+# /059   composition.npz
+# /066   contignames
+# /053   latent.npz
+# /064   lengths.npz
+# /057 󰦪  log.txt
+# /055 󰌝  model.pt
+# /054   vae_clusters_community_based_complete_and_circular_unsplit.tsv
+# /056   vae_clusters_community_based_complete_split.tsv
+# /052   vae_clusters_community_based_complete_unsplit.tsv
+# /060   vae_clusters_density_metadata.tsv
+# /067   vae_clusters_density_split.tsv
+# /063   vae_clusters_density_unsplit.tsv
+# /062   vae_clusters_density_unsplit_geNomadplasclustercontigs_extracted_thr_0.5_thrcirc_0.5.tsv
+# /058   vae_clusters_graph_thr_0.75_candidate_plasmids.tsv
+# /065   vae_clusters_unsplit.tsv
 
 # rulename = "checkm2"
 # rule checkm2:
@@ -542,7 +584,6 @@ rule classify_bins_with_geNomad:
 #             """
 #             echo hello
 #             """
-
 
 ## EXTRA FOR TESTING 
 

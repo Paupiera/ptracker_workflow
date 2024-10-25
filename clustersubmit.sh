@@ -21,7 +21,7 @@
 
 module load snakemake/7.30.1
 
-snakemake -F --nolock --use-conda -p --rerun-triggers mtime --snakefile snakefile.py \
+snakemake --nolock --use-conda -p --rerun-triggers mtime --snakefile snakefile.py \
   --jobs 8 --max-jobs-per-second 5 --max-status-checks-per-second 5 --latency-wait 60 --keep-incomplete \
   --rerun-incomplete \
   --cluster "sbatch  --output=snakemake_output/{rule}.%j.o --error=snakemake_output/{rule}.%j.e --time={resources.walltime} --job-name {rule}  --cpus-per-task {threads} --mem {resources.mem_gb}G "
